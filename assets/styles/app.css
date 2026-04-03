@@ -1,3 +1,259 @@
 body {
-    background-color: skyblue;
+    background-color: #ffffff;
 }
+
+/* GLOBAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 15px;
+    height: 90px;
+}
+
+.container {
+    max-width: calc(100% * 0.95);
+    margin: auto;
+}
+/* TOP BAR */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* LOGO */
+.logo a {
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* SEARCH */
+.search-bar {
+    display: none;
+    flex: 1;
+    justify-content: center;
+}
+
+.search-bar input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+}
+
+/* ACTIONS */
+.nav-actions {
+    display: none;
+    gap: 15px;
+}
+
+.nav-actions a {
+    color: white;
+    text-decoration: none;
+}
+
+/* BURGER */
+.burger {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: white;
+}
+
+/* MENU MOBILE */
+#nav-menu {
+    display: none;
+}
+
+#nav-menu ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+}
+li {
+    list-style: none;
+}
+ul {
+    list-style: none;
+}
+#nav-menu li {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#nav-menu a {
+    color: white;
+    text-decoration: none;
+}
+
+#nav-menu.active {
+    display: block;
+}
+/* ===== FORM GLOBAL ===== */
+.error {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Input en erreur */
+input.error,
+select.error,
+textarea.error {
+    border-color: #e74c3c;
+}
+form {
+    width: 100%;
+}
+
+/* LABEL */
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+/* INPUTS / SELECT / TEXTAREA */
+form input,
+form select,
+form textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px; /* 👉 arrondi */
+    border: 1px solid #ccc;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+/* HOVER */
+form input:hover,
+form select:hover,
+form textarea:hover {
+    border-color: #888;
+}
+
+/* FOCUS (important UX) */
+form input:focus,
+form select:focus,
+form textarea:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* glow */
+}
+
+/* PLACEHOLDER */
+form input::placeholder {
+    color: #aaa;
+}
+
+/* ERROR */
+form .form-error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* BUTTON */
+form button {
+    margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: none;
+    background: #3498db;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* HOVER BUTTON */
+form button:hover {
+    background: #2980b9;
+}
+
+/* CHECKBOX (roles etc) */
+form input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+/* ALIGN CHECKBOX LABEL */
+form .form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+/* DESKTOP */
+@media (min-width: 768px) {
+
+    .burger {
+        display: none;
+    }
+
+    /* SHOW ELEMENTS */
+    .search-bar {
+        display: flex;
+    }
+
+    .nav-actions {
+        display: flex;
+    }
+
+    /* MENU BELOW SEARCH */
+    #nav-menu {
+        display: block !important;
+        margin-top: 10px;
+    }
+
+    #nav-menu ul {
+        flex-direction: row;
+        justify-content: center; /* 👉 centré sous la barre */
+        gap: 30px;
+    }
+
+    #nav-menu li {
+        margin: 0;
+    }
+}
+
+/* DESKTOP */
+@media (min-width: 768px) {
+    .burger {
+        display: none;
+    }
+
+    #nav-menu {
+        display: block !important;
+        width: auto;
+    }
+
+    #nav-menu ul {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    #nav-menu li {
+        margin: 0;
+    }
+}
+
+
+

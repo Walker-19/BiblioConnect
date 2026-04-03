@@ -1,0 +1,5 @@
+{{ form_start(form, {'attr': {'id': 'form-category'}, 'action': path('admin_category_add')}) }}
+    {{ form_row(form.label) }}
+    {{ form_rest(form) }}
+    {{ form_errors(form) }}
+{{ form_end(form) }}

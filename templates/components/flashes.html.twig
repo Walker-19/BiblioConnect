@@ -1,0 +1,12 @@
+{# Affiche les flash messages de Symfony en format compatible avec le système de notifications #}
+{% set flashes = app.flashes %}
+
+{% if flashes %}
+    <div id="flashes" style="display: none;">
+        {% for type, messages in flashes %}
+            {% for message in messages %}
+                <div role="alert" data-type="{{ type }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}

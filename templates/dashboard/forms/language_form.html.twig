@@ -1,0 +1,5 @@
+{{ form_start(form, {'attr': {'id': 'form-language'}, 'action': path('admin_language_add')}) }}
+    {{ form_row(form.nom) }}
+    {{ form_rest(form) }}
+    {{ form_errors(form) }}
+{{ form_end(form) }}

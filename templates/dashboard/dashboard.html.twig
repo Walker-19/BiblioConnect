@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BiblioConnect{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    {# <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"> #}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+
+</head>
+<body>
+
+<div class="layout">
+
+    {# SIDEBAR #}
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <span>BiblioConnect</span>
+            <small>
+                {% if is_granted('ROLE_ADMIN') %}Espace admin
+                {% elseif is_granted('ROLE_LIBRARIAN') %}Espace bibliothécaire
+                {% else %}Espace usager{% endif %}
+            </small>
+        </div>
+
+        <nav class="nav">
+            <div class="nav-section">Principal</div>
+            <a href="" class="nav-item {{app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : ''}}">
+                Tableau de bord
+            </a>
+            <a href="" class="nav-item">
+                Catalogue
+            </a>
+
+            {% if is_granted('ROLE_LIBRARIAN') or is_granted('ROLE_ADMIN') %}
+            <div class="nav-section">Gestion</div>
+            <a href="{{ path('admin_books') }}" class="nav-item">Ouvrages</a>
+            <a href="" class="nav-item">Réservations</a>
+            <a href="" class="nav-item">Commentaires</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') %}
+            <div class="nav-section">Administration</div>
+            <a href="" class="nav-item">Utilisateurs</a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="avatar">
+                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                </div>
+                <div class="user-info">
+                    <p>{{ app.user.prenom }} {{ app.user.nom }}</p>
+                    <small>
+                        {% if is_granted('ROLE_ADMIN') %}Administrateur
+                        {% elseif is_granted('ROLE_LIBRARIAN') %}Bibliothécaire
+                        {% else %}Usager{% endif %}
+                    </small>
+                </div>
+            </div>
+            <a href="{{ path('app_logout') }}" style="font-size: 12px; color: var(--color-text-secondary);">
+                Déconnexion
+            </a>
+        </div>
+    </aside>
+
+    {# CONTENU PRINCIPAL #}
+    <div class="main">
+        <header class="topbar">
+            <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+            <div class="topbar-right">
+                {% for message in app.flashes('success') %}
+                    <span class="badge badge-success">{{ message }}</span>
+                {% endfor %}
+            </div>
+        </header>
+
+        <div class="content">
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+
+</div>
+
+{# <script src="{{ asset('scripts/dashboard.js') }}"></script> #}
+{% block javascripts %}{% endblock %}
+</body>
+</html>
