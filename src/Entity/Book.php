@@ -61,13 +61,22 @@ class Book
     #[ORM\Column(length: 13, nullable: true)]
     private ?string $isbn = null;
 
+    /**
+     * @var Collection<int, Rating>
+     */
+    #[ORM\OneToMany(targetEntity: Rating::class, mappedBy: 'book_id')]
+    private Collection $ratings;
+
+
+    private ?float $averageRating = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -263,6 +272,47 @@ class Book
     public function setIsbn(?string $isbn): static
     {
         $this->isbn = $isbn;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Rating>
+     */
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setBookId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // set the owning side to null (unless already changed)
+            if ($rating->getBookId() === $this) {
+                $rating->setBookId(null);
+            }
+        }
+
+        return $this;
+    }
+    
+    public function getAverageRating(): ?float
+    {
+        return $this->averageRating;
+    }
+    public function setAverageRating(?float $averageRating): static
+    {
+        $this->averageRating = $averageRating;
 
         return $this;
     }

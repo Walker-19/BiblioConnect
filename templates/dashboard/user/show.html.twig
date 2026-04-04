@@ -1,0 +1,131 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Détails de {{ user.prenom }} {{ user.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/user-details.css') }}">
+{% endblock %}
+{% block body %}
+<div class="ud-page">
+
+    <a class="ud-back" href="{{ path('admin_user_index') }}">← Retour à la liste</a>
+
+    {# En-tête #}
+    <div class="ud-header">
+        <div class="ud-avatar">
+            {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+        </div>
+        <div class="ud-header-info">
+            <strong>{{ user.prenom }} {{ user.nom }}</strong>
+            <p>{{ user.email }} · Inscrit{{ user.genre is defined and user.genre == 'F' ? 'e' : '' }} le {{ user.createdAt ? user.createdAt|date('d/m/Y') : 'N/A' }}</p>
+        </div>
+        <div>
+            {% if 'ROLE_ADMIN' in user.roles %}
+                <span class="ud-badge ud-badge-admin">Administrateur</span>
+            {% elseif 'ROLE_LIBRARIAN' in user.roles %}
+                <span class="ud-badge ud-badge-librarian">Bibliothécaire</span>
+            {% else %}
+                <span class="ud-badge ud-badge-user">Utilisateur standard</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Gestion du rôle #}
+    {% if (is_granted('ROLE_ADMIN')) %}
+    <div class="ud-role-bar">
+        <span class="ud-role-label">Rôle</span>
+        <form method="POST" action="{{ path('admin_user_update_roles', {id: user.id}) }}" class="ud-role-form">
+            <label class="ud-pill {% if user.roles|length == 0 or ('ROLE_ADMIN' not in user.roles and 'ROLE_LIBRARIAN' not in user.roles) %}active{% endif %}">
+                <input type="radio" name="role" value="" {% if user.roles|length == 0 or ('ROLE_ADMIN' not in user.roles and 'ROLE_LIBRARIAN' not in user.roles) %}checked{% endif %}>
+                <span class="ud-pill-dot"></span>Utilisateur
+            </label>
+            <label class="ud-pill {% if 'ROLE_LIBRARIAN' in user.roles %}active{% endif %}">
+                <input type="radio" name="role" value="ROLE_LIBRARIAN" {% if 'ROLE_LIBRARIAN' in user.roles %}checked{% endif %}>
+                <span class="ud-pill-dot"></span>Bibliothécaire
+            </label>
+            <label class="ud-pill {% if 'ROLE_ADMIN' in user.roles %}active{% endif %}">
+                <input type="radio" name="role" value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in user.roles %}checked{% endif %}>
+                <span class="ud-pill-dot"></span>Administrateur
+            </label>
+            <button type="submit" class="ud-save-btn">Enregistrer</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {# Historique des réservations #}
+    <div class="ud-table-card">
+        <div class="ud-table-head">
+            <span>Historique des réservations</span>
+            <span class="ud-count">{{ reservations|length }} réservation{{ reservations|length > 1 ? 's' : '' }}</span>
+        </div>
+
+        {% if reservations|length > 0 %}
+            <div class="ud-table-wrap">
+                <table class="ud-table">
+                    <thead>
+                        <tr>
+                            <th class="col-book">Livre</th>
+                            <th class="col-author">Auteur</th>
+                            <th class="col-date">Début</th>
+                            <th class="col-date">Fin</th>
+                            <th class="col-status">Statut</th>
+                            <th class="col-date">Réservé le</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    {% if reservation.book %}
+                                        {{ reservation.book.titre }}
+                                    {% else %}
+                                        <span class="ud-muted">Livre supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reservation.book and reservation.book.author %}
+                                        {{ reservation.book.author.nom }}
+                                    {% else %}
+                                        <span class="ud-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reservation.dateDebut ? reservation.dateDebut|date('d/m/Y') : '—' }}</td>
+                                <td>{{ reservation.dateFin ? reservation.dateFin|date('d/m/Y') : '—' }}</td>
+                                <td>
+                                    {% if reservation.status == 'active' %}
+                                        <span class="ud-st ud-st-active">En cours</span>
+                                    {% elseif reservation.status == 'pending' %}
+                                        <span class="ud-st ud-st-pending">En attente</span>
+                                    {% elseif reservation.status == 'completed' %}
+                                        <span class="ud-st ud-st-completed">Complétée</span>
+                                    {% elseif reservation.status == 'cancelled' %}
+                                        <span class="ud-st ud-st-cancelled">Annulée</span>
+                                    {% else %}
+                                        <span class="ud-st">{{ reservation.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reservation.createdAt ? reservation.createdAt|date('d/m/Y') : '—' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="ud-empty">
+                <p>Aucune réservation pour cet utilisateur.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.ud-pill input[type="radio"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.ud-pill').forEach(function(p) { p.classList.remove('active'); });
+        this.closest('.ud-pill').classList.add('active');
+    });
+});
+</script>
+{% endblock %}

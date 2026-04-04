@@ -27,7 +27,10 @@
 
         <nav class="nav">
             <div class="nav-section">Principal</div>
-            <a href="" class="nav-item {{app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : ''}}">
+           {% set route = app.request.attributes.get('_route') %}
+
+            <a href="{{ path('admin_dashboard') }}" 
+            class="nav-item {{ route in ['admin_dashboard', 'librarian_dashboard'] ? 'active' : '' }}">
                 Tableau de bord
             </a>
             <a href="" class="nav-item">
@@ -36,14 +39,29 @@
 
             {% if is_granted('ROLE_LIBRARIAN') or is_granted('ROLE_ADMIN') %}
             <div class="nav-section">Gestion</div>
-            <a href="{{ path('admin_books') }}" class="nav-item">Ouvrages</a>
+            <a href="{{ path('admin_author') }}" class="nav-item {{app.request.attributes.get('_route') == 'admin_author' ? 'active' : ''}}">
+                Auteurs
+            </a>
+            <a href="{{ path('admin_books') }}" class="nav-item {{app.request.attributes.get('_route') == 'admin_books' ? 'active' : ''}}">
+                Ouvrages
+            </a>
+             <a href="{{ path('admin_categories') }}" class="nav-item {{app.request.attributes.get('_route') == 'admin_categories' ? 'active' : ''}}">
+                Catégories
+            </a>
+             <a href="{{ path('admin_languages') }}" class="nav-item {{app.request.attributes.get('_route') == 'admin_languages' ? 'active' : ''}}">
+                Langues
+            </a>
             <a href="" class="nav-item">Réservations</a>
+            {% if is_granted('ROLE_ADMIN') %}
             <a href="" class="nav-item">Commentaires</a>
+            {% endif %}
             {% endif %}
 
             {% if is_granted('ROLE_ADMIN') %}
             <div class="nav-section">Administration</div>
-            <a href="" class="nav-item">Utilisateurs</a>
+            <a href="{{ path('admin_user_index') }}" class="nav-item {{app.request.attributes.get('_route') == 'admin_user_index' ? 'active' : ''}}">
+                Utilisateurs
+            </a>
             {% endif %}
         </nav>
 

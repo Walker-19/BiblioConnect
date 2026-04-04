@@ -1,0 +1,170 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Gestion des auteurs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/books.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <h1 style="font-size: 18px; font-weight: 500;">Gestion des auteurs</h1>
+                <p style="font-size: 13px; color: #888780; margin-top: 4px;">Ajoutez, modifiez ou supprimez les auteurs de votre bibliothèque.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('author')"><i class="fas fa-user-plus"></i> Ajouter un auteur</button>
+        </div>
+
+        <!-- Barre de recherche -->
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 8px;">
+                <div style="flex: 1; position: relative;">
+                    <input 
+                        type="text" 
+                        id="author-search" 
+                        placeholder="Rechercher par nom ou prénom..."
+                        style="width: 100%; padding: 10px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                    >
+                    <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none;"></i>
+                </div>
+                <button onclick="clearSearch()" style="padding: 10px 16px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                    <i class="fas fa-times"></i> Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="book-list">
+        {% if authors is empty %}
+            <p style="color: #888780; padding: 20px; text-align: center;">Aucun auteur disponible.</p>
+        {% else %}
+            <table class="book-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Biographie</th>
+                        <th style="width: 140px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="authors-table-body">
+                    {% for author in authors %}
+                        <tr data-author-name="{{ author.nom|lower }} {{ author.prenom|lower }}">
+                            <td>{{ author.nom }}</td>
+                            <td>{{ author.prenom }}</td>
+                            <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ author.bibliographie }}</td>
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="btn-table-edit" onclick="showAuthorDetails('{{ author.nom }}', '{{ author.prenom }}', '{{ author.bibliographie|replace({'"': '\"'}) }}')">
+                                        <i class="fas fa-eye"></i> Détails
+                                    </button>
+                                    <a href="{{ path('admin_author_edit', {'id': author.id}) }}" class="btn-table-edit">
+                                        <i class="fas fa-edit"></i> Éditer
+                                    </a>
+                                    <form method="POST" action="{{ path('admin_author_delete', {'id': author.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet auteur ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ author.id) }}">
+                                        <button type="submit" class="btn-table-delete">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    {# Importer le modal auteur depuis un fichier dédié #}
+    {% include 'dashboard/book/modals.html.twig' %}
+
+    {# ── MODAL DÉTAILS AUTEUR ── #}
+    <div id="author-details-overlay" onclick="closeModal('author-details')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:600px; margin: 0 1rem; max-height: 85vh; overflow-y: auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+                <span style="font-size:15px; font-weight:500;"><i class="fas fa-user"></i> Détails de l'auteur</span>
+                <button onclick="closeModal('author-details')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
+            </div>
+
+            <div style="display: grid; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Nom</label>
+                        <p id="details-author-nom" style="margin: 0; font-size: 16px; font-weight: 500; color: #1f2937;"></p>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Prénom</label>
+                        <p id="details-author-prenom" style="margin: 0; font-size: 16px; font-weight: 500; color: #1f2937;"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Biographie</label>
+                    <p id="details-author-bio" style="margin: 0; color: #555; line-height: 1.6; max-height: 200px; overflow-y: auto;"></p>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.5rem;">
+                <button type="button" class="btn" onclick="closeModal('author-details')"><i class="fas fa-times"></i> Fermer</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {# Importer les scripts des modals #}
+    {% include 'dashboard/book/modals_scripts.html.twig' %}
+
+    <script>
+        // Fonction pour afficher les détails de l'auteur
+        function showAuthorDetails(nom, prenom, bio) {
+            document.getElementById('details-author-nom').textContent = nom;
+            document.getElementById('details-author-prenom').textContent = prenom;
+            document.getElementById('details-author-bio').textContent = bio || 'Aucune biographie disponible.';
+            openModal('author-details');
+        }
+
+        {% verbatim %}
+        // Fonction de recherche en temps réel
+        document.getElementById('author-search').addEventListener('keyup', function(e) {
+            const tableRows = document.querySelectorAll('#authors-table-body tr');
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                const authorName = row.getAttribute('data-author-name');
+                if (authorName.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Afficher/masquer le message "aucun résultat"
+            const noResultsMsg = document.getElementById('no-results-msg');
+            if (visibleCount === 0 && searchTerm.length > 0) {
+                if (!noResultsMsg) {
+                    const tbody = document.getElementById('authors-table-body');
+                    const msg = document.createElement('tr');
+                    msg.id = 'no-results-msg';
+                    msg.innerHTML = '<td colspan="4" style="text-align: center; padding: 20px; color: #888780;">Aucun auteur trouvé.</td>';
+                    tbody.appendChild(msg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+        });
+
+        // Fonction pour réinitialiser la recherche
+        function clearSearch() {
+            document.getElementById('author-search').value = '';
+            document.getElementById('author-search').dispatchEvent(new Event('keyup'));
+            document.getElementById('author-search').focus();
+        }
+        {% endverbatim %}
+    </script>
+{% endblock %}

@@ -1,0 +1,79 @@
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId + '-overlay');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Reset les erreurs quand on ouvre le modal
+            const errorDiv = document.getElementById(modalId + '-errors');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.innerHTML = '';
+            }
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId + '-overlay');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Gestion des formulaires auteur, langue et catégorie
+    function setupFormHandler(formId, modalId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const action = form.getAttribute('action');
+            const errorDiv = document.getElementById(modalId + '-errors');
+
+            try {
+                const response = await fetch(action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Fermer le modal et réinitialiser le formulaire
+                    closeModal(modalId);
+                    form.reset();
+                    
+                    // Recharger la page après 1.5 secondes
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    // Afficher les erreurs
+                    const errors = data.errors || [data.message || 'Une erreur est survenue'];
+                    errorDiv.innerHTML = '';
+                    errors.forEach(error => {
+                        const errorItem = document.createElement('div');
+                        errorItem.style.marginBottom = '8px';
+                        errorItem.style.fontSize = '14px';
+                        errorItem.innerHTML = '• ' + error;
+                        errorDiv.appendChild(errorItem);
+                    });
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                errorDiv.innerHTML = '<div>Erreur lors de l\'envoi du formulaire</div>';
+                errorDiv.style.display = 'block';
+            }
+        });
+    }
+
+    // Initialiser les gestionnaires de formulaire
+    setupFormHandler('form-author', 'author');
+    setupFormHandler('form-language', 'language');
+    setupFormHandler('form-category', 'category');
+</script>

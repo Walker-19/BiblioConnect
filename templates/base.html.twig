@@ -2,91 +2,146 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}BiblioConnect{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
-      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
+
+        {% block stylesheets %}{% endblock %}
+
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
 
         {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
         {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+            <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+            <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+            <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
 
     <body>
-{{ include('components/flashes.html.twig') }}
-{{ include('components/notification.html.twig') }}
+        {{ include('components/flashes.html.twig') }}
+        {{ include('components/notification.html.twig') }}
 
-<header class="navbar">
-    <div class="container">
+        {% set route = app.request.attributes.get('_route') %}
 
-        <!-- TOP BAR -->
-        <div class="top-bar">
-            <div class="logo">
-                <a href="{{ path('app_home') }}">BiblioConnect</a>
-            </div>
+        <header class="nb">
+            <div class="nb-inner">
 
-            <!-- SEARCH -->
-            <form class="search-bar" method="get" action="">
-                <input type="text" name="q" placeholder="Rechercher un livre...">
-            </form>
+                {# ── Top bar ──────────────────────────────────────────── #}
+                <div class="nb-top">
 
-            <!-- RIGHT ACTIONS -->
-            <div class="nav-actions">
-                {% if app.user %}
-                    <a href="">Favoris</a>
-                    <a href="{{ path('app_logout') }}">Déconnexion</a>
-                {% else %}
-                    <a href="{{ path('app_login') }}">Connexion</a>
-                    <a href="{{ path('app_registration')}}">Inscription</a>
-                {% endif %}
-            </div>
+                    <a href="{{ path('app_home') }}" class="nb-logo">
+                        Biblio<span>Connect</span>
+                    </a>
 
-            <!-- BURGER -->
-            <button class="burger" id="burger">☰</button>
-        </div>
+                    <form class="nb-search" method="get" action="{{ path('app_book_index') }}">
+                        <svg class="nb-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <circle cx="6.5" cy="6.5" r="4.5"/>
+                            <path d="M10.5 10.5l3 3"/>
+                        </svg>
+                        <input
+                            type="search"
+                            name="q"
+                            value="{{ app.request.query.get('q') }}"
+                            placeholder="Rechercher un livre, un auteur..."
+                            autocomplete="off"
+                        >
+                    </form>
 
-        <!-- MENU -->
-        <nav id="nav-menu">
-            <ul>
-                <li><a href="">Accueil</a></li>
-                <li><a href="">Livres</a></li>
+                    <div class="nb-actions">
+                        {% if app.user %}
+                            <a href="{{ path('app_favorites') }}" class="nb-btn nb-btn-ghost">
+                                <i class="fa-regular fa-heart"></i>
+                                <span class="nb-btn-label">Favoris</span>
+                            </a>
+                            <a href="{{ path('app_profile') }}" class="nb-avatar" title="{{ app.user.prenom }} {{ app.user.nom }}">
+                                {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+                            </a>
+                            <a href="{{ path('app_logout') }}" class="nb-btn nb-btn-ghost nb-btn-logout" title="Déconnexion">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="nb-btn nb-btn-outline">Connexion</a>
+                            <a href="{{ path('app_registration') }}" class="nb-btn nb-btn-primary">Inscription</a>
+                        {% endif %}
 
-                {% if app.user %}
-                    <li><a href="">Profil</a></li>
+                        <button class="nb-burger" id="nb-burger" aria-label="Menu" aria-expanded="false">
+                            <span></span><span></span><span></span>
+                        </button>
+                    </div>
+                </div>
 
-                    {% if is_granted('ROLE_LIBRARIAN') %}
-                        <li><a href="">Bibliothécaire</a></li>
+                {# ── Bottom nav ───────────────────────────────────────── #}
+                <nav class="nb-nav" id="nb-nav" aria-label="Navigation principale">
+
+                    <a href="{{ path('app_home') }}"
+                       class="nb-link {{ route == 'app_home' ? 'active' : '' }}">
+                        Accueil
+                    </a>
+
+                    <a href="{{ path('app_book_index') }}"
+                       class="nb-link {{ route starts with 'app_book' ? 'active' : '' }}">
+                        Livres
+                    </a>
+
+                    {% if app.user %}
+                        <a href="{{ path('app_profile') }}"
+                           class="nb-link {{ route starts with 'app_profile' ? 'active' : '' }}">
+                            Mon profil
+                        </a>
+
+                        {% if is_granted('ROLE_LIBRARIAN') %}
+                            <div class="nb-sep"></div>
+                            <a href="{{ path('librarian_dashboard') }}"
+                               class="nb-link {{ route starts with 'librarian' ? 'active' : '' }}">
+                                Bibliothécaire
+                                <span class="nb-badge nb-badge-lib">lib</span>
+                            </a>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_ADMIN') %}
+                            {% if not is_granted('ROLE_LIBRARIAN') %}
+                                <div class="nb-sep"></div>
+                            {% endif %}
+                            <a href="{{ path('admin_dashboard') }}"
+                               class="nb-link {{ route starts with 'admin' ? 'active' : '' }}">
+                                Administration
+                                <span class="nb-badge nb-badge-admin">admin</span>
+                            </a>
+                        {% endif %}
                     {% endif %}
 
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li><a href="">Admin</a></li>
-                    {% endif %}
-                {% endif %}
-            </ul>
-        </nav>
+                </nav>
 
-    </div>
-</header>
+            </div>
+        </header>
 
+        <main>
+            {% block body %}{% endblock %}
+        </main>
 
-        {% block body %}{% endblock %}
+        <script>
+        (function () {
+            var burger = document.getElementById('nb-burger');
+            var nav    = document.getElementById('nb-nav');
 
-      <script>
-        const burger = document.getElementById('burger');
-        const menu = document.getElementById('nav-menu');
-        console.log('Burger and menu elements:', burger, menu); // Debugging log
+            burger.addEventListener('click', function () {
+                var open = nav.classList.toggle('nb-nav--open');
+                burger.setAttribute('aria-expanded', open);
+            });
 
-        burger.addEventListener('click', () => {
-        menu.classList.toggle('active');
-        });
+            // Ferme le menu si on clique en dehors
+            document.addEventListener('click', function (e) {
+                if (!burger.contains(e.target) && !nav.contains(e.target)) {
+                    nav.classList.remove('nb-nav--open');
+                    burger.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
         </script>
-    </body>
 
+    </body>
 </html>

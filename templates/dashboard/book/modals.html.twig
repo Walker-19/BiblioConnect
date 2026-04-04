@@ -1,0 +1,122 @@
+{# ── MODAL LIVRE ── #}
+{% if form is defined %}
+<div id="book-overlay" onclick="closeModal('book')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+    <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:900px; margin: 0 1rem; max-height: 85vh; overflow-y: auto;">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+            <span style="font-size:15px; font-weight:500;">Ajouter un livre</span>
+            <button onclick="closeModal('book')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
+        </div>
+
+        {{ form_start(form, {'attr': {'id': 'form-livre', 'class': 'book-form-grid'}}) }}
+            <div class="form-row-2col">
+                <div>{{ form_row(form.title) }}</div>
+                <div>{{ form_row(form.author) }}</div>
+            </div>
+            
+            <div class="form-row-full">
+                {{ form_row(form.description) }}
+            </div>
+            
+            <div class="form-row-2col">
+                <div>{{ form_row(form.yearPublication) }}</div>
+                <div>{{ form_row(form.stock) }}</div>
+            </div>
+            
+            <div class="form-row-2col">
+                <div>{{ form_row(form.language) }}</div>
+                <div>{{ form_row(form.categories) }}</div>
+            </div>
+            
+            <div class="form-row-2col">
+                <div>{{ form_row(form.image) }}</div>
+                <div>{{ form_row(form.isbn) }}</div>
+            </div>
+            
+            {{ form_rest(form) }}
+            {{ form_errors(form) }}
+        {{ form_end(form) }}
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.25rem;">
+            <button type="button" class="btn" onclick="closeModal('book')">Annuler</button>
+            <button type="submit" form="form-livre" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── MODAL AUTEUR ── #}
+{% if authorForm is defined %}
+<div id="author-overlay" onclick="closeModal('author')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+    <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:560px; margin: 0 1rem;">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+            <span style="font-size:15px; font-weight:500;">Ajouter un auteur</span>
+            <button onclick="closeModal('author')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
+        </div>
+
+        <div id="author-errors" style="display:none; background:#fee; padding:12px; border-radius:6px; margin-bottom:12px; border-left:4px solid #f44;"></div>
+
+        <form method="POST" action="{{ path('admin_author_add') }}" id="form-author" style="display:flex; flex-direction:column; gap:12px;" data-form="author">
+            {{ form_row(authorForm.prenom) }}
+            {{ form_row(authorForm.nom) }}
+            {{ form_rest(authorForm) }}
+        </form>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.25rem;">
+            <button type="button" class="btn" onclick="closeModal('author')">Annuler</button>
+            <button type="submit" form="form-author" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── MODAL LANGUE ── #}
+{% if languageForm is defined %}
+<div id="language-overlay" onclick="closeModal('language')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+    <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:560px; margin: 0 1rem;">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+            <span style="font-size:15px; font-weight:500;">Ajouter une langue</span>
+            <button onclick="closeModal('language')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
+        </div>
+
+        <div id="language-errors" style="display:none; background:#fee; padding:12px; border-radius:6px; margin-bottom:12px; border-left:4px solid #f44;"></div>
+
+        <form method="POST" action="{{ path('admin_language_add') }}" id="form-language" style="display:flex; flex-direction:column; gap:12px;" data-form="language">
+            {{ form_row(languageForm.nom) }}
+            {{ form_rest(languageForm) }}
+        </form>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.25rem;">
+            <button type="button" class="btn" onclick="closeModal('language')">Annuler</button>
+            <button type="submit" form="form-language" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── MODAL CATÉGORIE ── #}
+{% if categoryForm is defined %}
+<div id="category-overlay" onclick="closeModal('category')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+    <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:560px; margin: 0 1rem;">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+            <span style="font-size:15px; font-weight:500;">Ajouter une catégorie</span>
+            <button onclick="closeModal('category')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
+        </div>
+
+        <div id="category-errors" style="display:none; background:#fee; padding:12px; border-radius:6px; margin-bottom:12px; border-left:4px solid #f44;"></div>
+
+        <form method="POST" action="{{ path('admin_category_add') }}" id="form-category" style="display:flex; flex-direction:column; gap:12px;" data-form="category">
+            {{ form_row(categoryForm.label) }}
+            {{ form_rest(categoryForm) }}
+        </form>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.25rem;">
+            <button type="button" class="btn" onclick="closeModal('category')">Annuler</button>
+            <button type="submit" form="form-category" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </div>
+</div>
+{% endif %}

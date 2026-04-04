@@ -51,9 +51,23 @@ class SecurityController extends AbstractController
     }
 
     #[Route(path: '/librarian/dashboard', name: 'librarian_dashboard')]
-    public function librarianDashboard(): Response
+    public function librarianDashboard(EntityManagerInterface $em): Response
     {
-        return $this->render('dashboard/librarian/index.html.twig');
+          $stats = [
+            'totalBooks' => $em->getRepository(Book::class)->count([]),
+            'totalUsers' => $em->getRepository(User::class)->count([]),
+            'totalComments' => $em->getRepository(Comment::class)->count([]),
+        ];
+
+        $lastReservations = $em->getRepository(Reservation::class)->findBy([], ['createdAt' => 'DESC'], 5);
+
+        $lastComments = $em->getRepository(Comment::class)->findBy(['status' => 'en attente'], ['createdAt' => 'DESC'], 5);
+
+        return $this->render('dashboard/librarian/index.html.twig', [
+            'stats' => $stats,
+            'lastReservations' => $lastReservations,
+            'lastComments' => $lastComments,
+        ]);
     }
 
     #[Route(path: '/logout', name: 'app_logout')]

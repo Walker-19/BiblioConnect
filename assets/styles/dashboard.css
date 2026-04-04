@@ -11,15 +11,16 @@ body {
     background: #f5f5f0;
     color: #1a1a1a;
     max-height: 100vh;
+    overflow: hidden;
+
 }
 
 /* ─── LAYOUT ─────────────────────────────────── */
 
 .layout {
     display: flex;
-    height: calc(100vh * .97);
+    height: calc(100vh * .95);
     overflow: hidden;
-    overflow-y: auto;
 }
 
 .main {
@@ -27,6 +28,8 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 .content {
@@ -44,6 +47,7 @@ body {
     flex-direction: column;
     padding: 1.5rem 0;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .sidebar-logo {
@@ -69,6 +73,7 @@ body {
 .nav {
     padding: 1rem 0;
     flex: 1;
+    overflow-y: auto;
 }
 
 .nav-section {

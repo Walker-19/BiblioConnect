@@ -1,0 +1,33 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+ <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Utilisateurs</div>
+            <div class="stat-value">{{ stats.totalUsers }}</div>
+            <div class="stat-sub">+12% depuis hier</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Ouvrages</div>
+            <div class="stat-value">{{ stats.totalBooks }}</div>
+            <div class="stat-sub">+5% depuis hier</div>
+        </div>
+        {# <div class="stat-card">
+            <div class="stat-label">Réservations</div>
+            <div class="stat-value">{{ stats.totalReservations }}</div>
+            <div class="stat-sub">+8% depuis hier</div>
+        </div> #}
+        <div class="stat-card">
+            <div class="stat-label">Commentaires</div>
+            <div class="stat-value">{{ stats.totalComments }}</div>
+            <div class="stat-sub">+3% depuis hier</div>
+        </div>
+    </div>
+
+    <h2>Gestion des utilisateurs</h2>
+    <p>Bienvenue dans l'espace administrateur ! Vous pouvez gérer les utilisateurs, les ouvrages et les réservations depuis cette interface.</p>
+
+    <!-- Contenu spécifique à l'administrateur -->
+{% endblock %}

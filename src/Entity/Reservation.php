@@ -19,8 +19,17 @@ class Reservation
     #[ORM\Column]
     private ?\DateTime $dateFin = null;
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_CANCELED = 'canceled';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_OVERDUE = 'overdue';
+
+
     #[ORM\Column(length: 150)]
-    private ?string $status = null;
+    private ?string $status = self::STATUS_PENDING;
+
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;

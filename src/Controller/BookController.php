@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Entity\Author;
 use App\Entity\Language;
 use App\Entity\Category;
+use App\Entity\Reservation;
 use App\Form\BookType;
 use App\Form\AuthorType;
 use App\Form\LanguageType;
@@ -217,6 +218,104 @@ final class BookController extends AbstractController
             'categoryForm' => $form,
             'formError' => true,
         ]);
+    }
+
+    #[Route('/admin/book/{id}/edit', name: 'admin_book_edit', methods: ['GET', 'POST'])]
+    public function editBook(Request $request, Book $book, EntityManagerInterface $em): Response
+    {
+        // Sauvegarder l'image originale
+        $originalImage = $book->getImage();
+        
+        // Créer le formulaire avec l'image remise à null pour éviter l'erreur File/string
+        $book->setImage(null);
+        $form = $this->createForm(BookType::class, $book);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('image')->getData();
+            
+            if ($imageFile) {
+                // Nouvelle image uploadée - supprimer l'ancienne si elle existe
+                if ($originalImage) {
+                    $oldImagePath = $this->getParameter('images_directory') . '/' . $originalImage;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                
+                $originalFileName = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFileName = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFileName);
+                $newFileName = $safeFileName . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                
+                try {
+                    $imageFile->move($this->getParameter('images_directory'), $newFileName);
+                    $book->setImage($newFileName);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de l\'image : ' . $e->getMessage());
+                    // Restaurer l'ancienne image
+                    $book->setImage($originalImage);
+                }
+            } else {
+                // Aucune nouvelle image - conserver l'originale
+                $book->setImage($originalImage);
+            }
+            
+            $em->persist($book);
+            $em->flush();
+            $this->addFlash('success', 'Livre modifié avec succès !');
+            return $this->redirectToRoute('admin_books');
+        }
+
+        // Restaurer l'image pour l'affichage dans le template
+        $book->setImage($originalImage);
+
+        return $this->render('dashboard/book/edit_book.html.twig', [
+            'book' => $book,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/admin/book/{id}/delete', name: 'admin_book_delete', methods: ['POST'])]
+    public function deleteBook(Book $book, EntityManagerInterface $em, Request $request): Response
+    {
+        // Vérifier le token CSRF
+        if (!$this->isCsrfTokenValid('delete' . $book->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide');
+            return $this->redirectToRoute('admin_books');
+        }
+
+        // Supprimer l'image si elle existe
+        if ($book->getImage()) {
+            $imagePath = $this->getParameter('images_directory') . '/' . $book->getImage();
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        $em->remove($book);
+        $em->flush();
+
+        $this->addFlash('success', 'Livre supprimé avec succès !');
+        return $this->redirectToRoute('admin_books');
+    }
+    #[Route('/show_book/{id}', name: 'app_book_show')]
+    public function bookShow(Book $book, EntityManagerInterface $em): Response
+    {   
+        $reservations = $em->getRepository(Reservation::class)->findBy(['book' => $book]);
+        $reservationList = [];
+        foreach ($reservations as $reservation) {
+            $reservationList[] = [
+                'start' => $reservation->getDateDebut(),
+                'end' => $reservation->getDateFin()
+            ];
+        }
+
+        return $this->render('home/book_show.html.twig', [
+            'controller_name' => 'HomeController',
+            'book' => $book,
+            'listReservation' => $reservationList
+        ]); 
+
     }
 }
 

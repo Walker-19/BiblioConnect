@@ -1,0 +1,253 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block page_title %}Édition du livre{% endblock %}
+
+{% block title %}Éditer : {{ book.title }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .edit-container {
+            max-width: 100%;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;   
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .edit-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+        .edit-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .image-preview {
+            width: 150px;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        .btn-back {
+            background-color: #6b7280;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-back:hover {
+            background-color: #4b5563;
+        }
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
+        .btn-save {
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-save:hover {
+            background-color: #5568d3;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="edit-container">
+        <div class="edit-header">
+            <h1><i class="fas fa-edit"></i> Éditer le livre</h1>
+            <a href="{{ path('admin_books') }}" style="text-decoration: none; color: #667eea; font-weight: 500;"><i class="fas fa-arrow-left"></i> Retour</a>
+        </div>
+
+        {# Prévisualisation de l'image actuelle #}
+        {% if book.image %}
+            <div class="image-preview">
+                <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}">
+            </div>
+        {% else %}
+            <div class="image-preview">
+                <div class="image-preview-placeholder"><i class="fas fa-book"></i></div>
+            </div>
+        {% endif %}
+
+        {{ form_start(form, {'attr': {'class': 'edit-form', 'novalidate': true}}) }}
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.author) }}
+                    {{ form_widget(form.author) }}
+                    {{ form_errors(form.author) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.yearPublication) }}
+                    {{ form_widget(form.yearPublication) }}
+                    {{ form_errors(form.yearPublication) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.stock) }}
+                    {{ form_widget(form.stock) }}
+                    {{ form_errors(form.stock) }}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.language) }}
+                    {{ form_widget(form.language) }}
+                    {{ form_errors(form.language) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.isbn) }}
+                    {{ form_widget(form.isbn) }}
+                    {{ form_errors(form.isbn) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.categories) }}
+                {{ form_widget(form.categories) }}
+                {{ form_errors(form.categories) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'accept': 'image/*'}}) }}
+                {{ form_errors(form.image) }}
+                <small style="color: #666; margin-top: 0.5rem;">Laisser vide pour conserver l'image actuelle</small>
+            </div>
+
+            {{ form_rest(form) }}
+
+            <div class="buttons">
+                <a href="{{ path('admin_books') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Annuler</a>
+                
+                <form method="POST" action="{{ path('admin_book_delete', {'id': book.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                    <button type="submit" class="btn-delete"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                </form>
+
+                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

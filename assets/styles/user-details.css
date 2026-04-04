@@ -1,0 +1,257 @@
+/* ── User detail page ───────────────────────────────────────── */
+
+.ud-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Back link */
+.ud-back {
+    display: inline-block;
+    font-size: 12px;
+    color: #2563eb;
+    text-decoration: none;
+    margin-bottom: 14px;
+}
+.ud-back:hover { opacity: 0.7; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+.ud-header {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.ud-avatar {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.ud-header-info {
+    flex: 1;
+    min-width: 0;
+}
+.ud-header-info strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    display: block;
+}
+.ud-header-info p {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badges rôle (header) */
+.ud-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.ud-badge-user      { background: #f3f4f6; color: #374151; }
+.ud-badge-admin     { background: #fee2e2; color: #991b1b; }
+.ud-badge-librarian { background: #dbeafe; color: #1e40af; }
+
+/* ── Role bar ───────────────────────────────────────────────── */
+.ud-role-bar {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.ud-role-label {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.ud-role-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+/* Pill labels (radio hidden inside) */
+.ud-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1.5px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+    user-select: none;
+}
+.ud-pill input[type="radio"] { display: none; }
+
+.ud-pill:hover {
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+.ud-pill.active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.ud-pill-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.ud-save-btn {
+    margin-left: auto;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+}
+.ud-save-btn:hover { background: #dbeafe; }
+
+/* ── Table card ─────────────────────────────────────────────── */
+.ud-table-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ud-table-head {
+    padding: 11px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.ud-table-head span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.ud-count {
+    font-size: 11px;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.ud-table-wrap { overflow-x: auto; }
+
+.ud-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.ud-table thead th {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ud-table tbody td {
+    font-size: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ud-table tbody tr:last-child td { border-bottom: none; }
+.ud-table tbody tr:hover td { background: #f9fafb; }
+
+/* Column widths */
+.col-book   { width: 28%; }
+.col-author { width: 20%; }
+.col-date   { width: 12%; }
+.col-status { width: 14%; }
+
+/* Status badges */
+.ud-st {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+}
+.ud-st-active    { background: #d1fae5; color: #065f46; }
+.ud-st-pending   { background: #fef3c7; color: #78350f; }
+.ud-st-completed { background: #dbeafe; color: #1e40af; }
+.ud-st-cancelled { background: #fee2e2; color: #991b1b; }
+
+/* Misc */
+.ud-muted { color: #9ca3af; }
+
+.ud-empty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .ud-header { gap: 10px; }
+    .ud-table thead th:nth-child(3),
+    .ud-table thead th:nth-child(4),
+    .ud-table tbody td:nth-child(3),
+    .ud-table tbody td:nth-child(4) { display: none; }
+    .col-book   { width: 35%; }
+    .col-author { width: 25%; }
+}

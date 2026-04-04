@@ -40,5 +40,7 @@ public function index(Request $request, UserPasswordHasherInterface $passwordHas
     return $this->render('registration/index.html.twig', [
         'form' => $form,
     ]);
+
+  
 }
 }

@@ -13,99 +13,248 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* NAVBAR */
-.navbar {
-    background: #2c3e50;
-    color: white;
-    padding: 10px 15px;
-    height: 90px;
+
+
+/* ── Navbar ─────────────────────────────────────────────────── */
+
+.nb {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.container {
-    max-width: calc(100% * 0.95);
-    margin: auto;
+.nb-inner {
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 0 20px;
 }
-/* TOP BAR */
-.top-bar {
+
+/* ── Top bar ─────────────────────────────────────────────────── */
+.nb-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: 14px;
+    height: 56px;
 }
 
-/* LOGO */
-.logo a {
-    color: white;
-    font-weight: bold;
-    font-size: 20px;
+.nb-logo {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
     text-decoration: none;
-    font-family: Arial, Helvetica, sans-serif;
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+    flex-shrink: 0;
 }
+.nb-logo span { color: #2563eb; }
+.nb-logo:hover { opacity: 0.85; }
 
-/* SEARCH */
-.search-bar {
-    display: none;
+/* ── Search ──────────────────────────────────────────────────── */
+.nb-search {
     flex: 1;
-    justify-content: center;
-}
-
-.search-bar input {
-    width: 100%;
     max-width: 400px;
-    padding: 10px;
-    border-radius: 20px;
-    border: none;
+    position: relative;
 }
 
-/* ACTIONS */
-.nav-actions {
-    display: none;
-    gap: 15px;
+.nb-search input {
+    width: 100%;
+    height: 34px;
+    padding: 0 12px 0 34px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    background: #f9fafb;
+    outline: none;
+    transition: border-color .15s, background .15s;
+}
+.nb-search input:focus {
+    border-color: #93c5fd;
+    background: #fff;
 }
 
-.nav-actions a {
-    color: white;
+.nb-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+/* ── Actions ─────────────────────────────────────────────────── */
+.nb-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.nb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
     text-decoration: none;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    background: none;
 }
 
-/* BURGER */
-.burger {
-    font-size: 24px;
+.nb-btn-ghost {
+    color: #374151;
+}
+.nb-btn-ghost:hover { background: #f3f4f6; }
+
+.nb-btn-outline {
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+}
+.nb-btn-outline:hover { background: #f3f4f6; }
+
+.nb-btn-primary {
+    color: #fff;
+    background: #2563eb;
+}
+.nb-btn-primary:hover { background: #1d4ed8; }
+
+.nb-btn-logout { color: #6b7280; }
+.nb-btn-logout:hover { color: #dc2626; background: #fee2e2; }
+
+/* Avatar */
+.nb-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid #bfdbfe;
+    flex-shrink: 0;
+    transition: border-color .15s;
+}
+.nb-avatar:hover { border-color: #3b82f6; }
+
+/* Burger */
+.nb-burger {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
     background: none;
     border: none;
-    color: white;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
 }
-
-/* MENU MOBILE */
-#nav-menu {
-    display: none;
-}
-
-#nav-menu ul {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    margin-top: 15px;
-}
-li {
-    list-style: none;
-}
-ul {
-    list-style: none;
-}
-#nav-menu li {
-    margin: 10px 0;
-    text-align: center;
-}
-
-#nav-menu a {
-    color: white;
-    text-decoration: none;
-}
-
-#nav-menu.active {
+.nb-burger:hover { background: #f3f4f6; }
+.nb-burger span {
+    width: 20px;
+    height: 2px;
+    background: #374151;
+    border-radius: 2px;
     display: block;
+    transition: transform .2s, opacity .2s;
 }
+
+/* ── Bottom nav ──────────────────────────────────────────────── */
+.nb-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 40px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.nb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .15s, background .15s;
+}
+.nb-link:hover { color: #111827; background: #f3f4f6; }
+.nb-link.active { color: #2563eb; background: #eff6ff; }
+
+/* Séparateur */
+.nb-sep {
+    width: 1px;
+    height: 16px;
+    background: #e5e7eb;
+    margin: 0 6px;
+    flex-shrink: 0;
+}
+
+/* Badges rôle */
+.nb-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+}
+.nb-badge-lib   { background: #dbeafe; color: #1e40af; }
+.nb-badge-admin { background: #fee2e2; color: #991b1b; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .nb-search { max-width: none; }
+    .nb-btn-label { display: none; }
+    .nb-btn-logout { display: none; }
+}
+
+@media (max-width: 600px) {
+    .nb-search { display: none; }
+    .nb-burger { display: flex; }
+
+    .nb-nav {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        height: auto;
+        padding: 8px 0 12px;
+        border-top: 1px solid #e5e7eb;
+        gap: 2px;
+    }
+    .nb-nav.nb-nav--open { display: flex; }
+
+    .nb-link {
+        padding: 9px 12px;
+        border-radius: 0;
+        font-size: 14px;
+    }
+    .nb-link:hover { background: #f3f4f6; }
+    .nb-link.active { background: #eff6ff; border-radius: 0; }
+
+    .nb-sep {
+        width: 100%;
+        height: 1px;
+        margin: 4px 0;
+    }
+}
+
+
 /* ===== FORM GLOBAL ===== */
 .error {
     color: #e74c3c;

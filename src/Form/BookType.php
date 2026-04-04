@@ -50,6 +50,7 @@ class BookType extends AbstractType
             ])
             ->add('image', FileType::class, [
                 'label' => 'Image',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'Sélectionnez une image pour le livre',
                 ],
@@ -70,6 +71,7 @@ class BookType extends AbstractType
             ])
             ->add('isbn', TextType::class, [
                 'label' => 'ISBN',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'Entrez le numéro ISBN du livre',
                 ],

@@ -1,14 +1,196 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Bienvenue sur BiblioConnect{% endblock %}
-
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/home.css') }}">
+{% endblock %}
 {% block body %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper { margin: 1em auto; max-width: 100%; width: 100%; font: 18px/1.5 sans-serif; }
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
 </style>
 
-<div class="example-wrapper">
-    <h1>Bienvenue sur BiblioConnect! ✅</h1>
-</div>
+<section class="hp-hero">
+    <div class="hp-inner">
+        <div class="hp-hero-content">
+            <div class="hp-eyebrow">Bibliothèque numérique</div>
+            <h1 class="hp-hero-title">
+                Votre prochaine lecture<br>
+                vous <span>attend ici</span>
+            </h1>
+            <p class="hp-hero-sub">
+                Découvrez, réservez et empruntez des milliers de livres en quelques clics.
+                Accès libre, retours faciles.
+            </p>
+
+            <div class="hp-hero-cta">
+                <a href="{{ path('app_book_index') }}" class="hp-btn hp-btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    Explorer les livres
+                </a>
+                {% if not app.user %}
+                    <a href="{{ path('app_registration') }}" class="hp-btn hp-btn-outline">
+                        Créer un compte
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_profile') }}" class="hp-btn hp-btn-outline">
+                        Mon espace
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="hp-hero-stats">
+                <div class="hp-stat">
+                    <div class="hp-stat-val">{{ stats.totalBooks ?? '2 400' }}+</div>
+                    <div class="hp-stat-lbl">Livres disponibles</div>
+                </div>
+                <div class="hp-stat">
+                    <div class="hp-stat-val">{{ stats.totalMembers ?? '340' }}</div>
+                    <div class="hp-stat-lbl">Membres actifs</div>
+                </div>
+                <div class="hp-stat">
+                    <div class="hp-stat-val">{{ stats.totalCategories ?? '18' }}</div>
+                    <div class="hp-stat-lbl">Catégories</div>
+                </div>
+            </div>
+        </div>
+
+        {# Bloc visuel contextuel selon l'état de connexion #}
+        <div class="hp-hero-visual">
+            {% if app.user %}
+                {# Utilisateur connecté : mini tableau de bord #}
+                <div class="hp-visual-label">Bonjour, {{ app.user.prenom }} 👋</div>
+                <div class="hp-visual-section">
+                    <div class="hp-visual-row-title">Mes réservations en cours</div>
+                    {% if activeReservations is defined and activeReservations|length > 0 %}
+                        {% for resa in activeReservations|slice(0, 3) %}
+                            <div class="hp-resa-item">
+                                <div class="hp-resa-title">{{ resa.book.titre }}</div>
+                                <div class="hp-resa-date">Retour le {{ resa.dateFin|date('d/m/Y') }}</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="hp-resa-empty">Aucune réservation active</div>
+                    {% endif %}
+                </div>
+                <a href="{{ path('app_profile') }}" class="hp-visual-link">Voir mon profil →</a>
+            {% else %}
+                {# Visiteur : aperçu des tendances #}
+                <div class="hp-visual-label">Tendances cette semaine</div>
+                <div class="hp-books-preview">
+                    {% if trendingBooks is defined %}
+                        {% for book in trendingBooks|slice(0, 5) %}
+                            <a href="{{ path('app_book_show', {id: book.id}) }}"
+                               class="hp-preview-book"
+                               style="background: {{ loop.index is odd ? '#dbeafe' : '#fce7f3' }}">
+                                {{ book.titre|slice(0, 8) }}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="hp-preview-book" style="background:#dbeafe">Romans</div>
+                        <div class="hp-preview-book" style="background:#fce7f3">Poésie</div>
+                        <div class="hp-preview-book" style="background:#d1fae5">Sciences</div>
+                        <div class="hp-preview-book" style="background:#fef3c7">Histoire</div>
+                        <div class="hp-preview-book" style="background:#ede9fe">Philo</div>
+                    {% endif %}
+                </div>
+                <a href="{{ path('app_book_index') }}" class="hp-visual-link">Voir tous les livres →</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="hp-section">
+    <div class="hp-inner">
+        <div class="hp-section-head">
+            <h2 class="hp-section-title">Parcourir par catégorie</h2>
+            <a href="{{ path('app_book_index') }}" class="hp-section-link">Toutes les catégories →</a>
+        </div>
+        <div class="hp-cats">
+            {% if categories is defined and categories|length > 0 %}
+                {% set catColors = ['#dbeafe','#d1fae5','#fce7f3','#fef3c7','#ede9fe','#fee2e2'] %}
+                {% for cat in categories|slice(0, 6) %}
+                    <a href="{{ path('app_book_index', {category: cat.id}) }}" class="hp-cat">
+                        <div class="hp-cat-icon" style="background: {{ catColors[loop.index0 % 6] }}">
+                            <i class="fa-solid fa-book" style="font-size:16px"></i>
+                        </div>
+                        <div class="hp-cat-name">{{ cat.label }}</div>
+                        <div class="hp-cat-count">{{ cat.books|length }} livres</div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                {# Fallback statique #}
+                {% set staticCats = [
+                    {name: 'Romans',      icon: 'fa-book-open',  color: '#dbeafe', count: '420'},
+                    {name: 'Sciences',    icon: 'fa-flask',      color: '#d1fae5', count: '185'},
+                    {name: 'Poésie',      icon: 'fa-feather',    color: '#fce7f3', count: '97'},
+                    {name: 'Histoire',    icon: 'fa-landmark',   color: '#fef3c7', count: '312'},
+                    {name: 'Philosophie', icon: 'fa-lightbulb',  color: '#ede9fe', count: '143'},
+                    {name: 'Jeunesse',    icon: 'fa-child',      color: '#fee2e2', count: '228'}
+                ] %}
+                {% for cat in staticCats %}
+                    <a href="{{ path('app_book_index') }}" class="hp-cat">
+                        <div class="hp-cat-icon" style="background: {{ cat.color }}">
+                            <i class="fa-solid {{ cat.icon }}" style="font-size:16px;color:#374151"></i>
+                        </div>
+                        <div class="hp-cat-name">{{ cat.name }}</div>
+                        <div class="hp-cat-count">{{ cat.count }} livres</div>
+                    </a>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+<section class="hp-section">
+    <div class="hp-inner">
+        <div class="hp-section-head">
+            <h2 class="hp-section-title">Derniers livres ajoutés</h2>
+            <a href="{{ path('app_book_index') }}" class="hp-section-link">Voir tout →</a>
+        </div>
+        <div class="hp-books">
+            {% set coverColors = ['#dbeafe','#fce7f3','#d1fae5','#fef3c7','#ede9fe','#fee2e2'] %}
+            {% if books is defined and books|length > 0 %}
+                {% for book in books|slice(0, 6) %}
+                    <a href="{{ path('app_book_show', {id: book.id}) }}" class="hp-book-card">
+                        <div class="hp-book-cover" style="background: {{ coverColors[loop.index0 % 6] }}">
+                            <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}" style="width:100%;height:100%;object-fit:contain;opacity:0.8;">
+                        </div>
+                        <div class="hp-book-info">
+                            <div class="hp-book-title">{{ book.title }}</div>
+                            <div class="hp-book-author">
+                                {% if book.author %}{{ book.author.nom }}{% endif %}
+                            </div>
+                            <div class="hp-book-meta">
+                                {% if book.stock > 0 %}
+                                    <span class="hp-badge hp-badge-avail">Disponible</span>
+                                {% else %}
+                                    <span class="hp-badge hp-badge-taken">Emprunté</span>
+                                {% endif %}
+                            </div>
+                            <div class="" style="margin-top: 7px; display: flex; gap: 5px; align-items: center;"> 
+                            <span style="color: #14202C">
+                                {{ book.averageRating ?? 0 }}
+                            </span>
+                               <span>
+                                {% for i in 1..5 %}
+                                    {% if i <= book.averageRating %}
+                                        <i class="fa-solid fa-star" style="color: gold"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star" style="color: gold"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+    
+        
+       
+            {% endif %}
+        </div>
+    </div>
+</section>
 {% endblock %}
