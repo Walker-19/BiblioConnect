@@ -200,18 +200,18 @@
             </div>
 
             <div class="form-group">
-                {{ form_label(form.password.first, 'Mot de passe') }}
-                {{ form_widget(form.password.first, {attr: {placeholder: '••••••••'}}) }}
-                {% if form_errors(form.password.first) %}
-                    <div class="field-error"><i class="fa fa-circle-exclamation fa-xs"></i> {{ form_errors(form.password.first) }}</div>
+                {{ form_label(form.plainPassword.first, 'Mot de passe') }}
+                {{ form_widget(form.plainPassword.first, {attr: {placeholder: '••••••••'}}) }}
+                {% if form_errors(form.plainPassword.first) %}
+                    <div class="field-error"><i class="fa fa-circle-exclamation fa-xs"></i> {{ form_errors(form.plainPassword.first) }}</div>
                 {% endif %}
             </div>
 
             <div class="form-group">
-                {{ form_label(form.password.second, 'Confirmer le mot de passe') }}
-                {{ form_widget(form.password.second, {attr: {placeholder: '••••••••'}}) }}
-                {% if form_errors(form.password.second) %}
-                    <div class="field-error"><i class="fa fa-circle-exclamation fa-xs"></i> {{ form_errors(form.password.second) }}</div>
+                {{ form_label(form.plainPassword.second, 'Confirmer le mot de passe') }}
+                {{ form_widget(form.plainPassword.second, {attr: {placeholder: '••••••••'}}) }}
+                {% if form_errors(form.plainPassword.second) %}
+                    <div class="field-error"><i class="fa fa-circle-exclamation fa-xs"></i> {{ form_errors(form.plainPassword.second) }}</div>
                 {% endif %}
             </div>
 

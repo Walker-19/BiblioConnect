@@ -78,7 +78,7 @@
         {% endif %}
     </div>
 
-    {# Importer le modal auteur depuis un fichier dédié #}
+    {# Import des modals #}
     {% include 'dashboard/book/modals.html.twig' %}
 
     {# ── MODAL DÉTAILS AUTEUR ── #}
@@ -116,11 +116,10 @@
 {% endblock %}
 
 {% block javascripts %}
-    {# Importer les scripts des modals #}
+    {# Import des modals #}
     {% include 'dashboard/book/modals_scripts.html.twig' %}
 
     <script>
-        // Fonction pour afficher les détails de l'auteur
         function showAuthorDetails(nom, prenom, bio) {
             document.getElementById('details-author-nom').textContent = nom;
             document.getElementById('details-author-prenom').textContent = prenom;
@@ -129,7 +128,6 @@
         }
 
         {% verbatim %}
-        // Fonction de recherche en temps réel
         document.getElementById('author-search').addEventListener('keyup', function(e) {
             const tableRows = document.querySelectorAll('#authors-table-body tr');
             let visibleCount = 0;

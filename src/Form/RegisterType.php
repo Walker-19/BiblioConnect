@@ -30,7 +30,7 @@ class RegisterType extends AbstractType
                     new Assert\Email(message: 'L\'adresse email "{{ value }}" n\'est pas valide.'),
                 ],
             ])
-            ->add('password', RepeatedType::class, [
+            ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'first_options' => [
                     'label' => 'Mot de passe',
@@ -49,7 +49,6 @@ class RegisterType extends AbstractType
                    
                 ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
-                'mapped' => false,
                  'constraints' => [
                             new Assert\NotBlank(message: 'Le mot de passe ne peut pas être vide.'),
                             new Assert\Regex(

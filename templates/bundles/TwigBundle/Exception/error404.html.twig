@@ -1,0 +1,21 @@
+{% extends 'bundles/TwigBundle/Exception/error.html.twig' %}
+
+{% block title %}Page introuvable{% endblock %}
+
+{% block err_icon %}<div class="err-icon">🔍</div>{% endblock %}
+
+{% block err_title %}Page introuvable{% endblock %}
+
+{% block err_desc %}
+    La page que vous recherchez n'existe pas ou a été déplacée.
+    Vérifiez l'URL ou utilisez les liens ci-dessous pour retrouver votre chemin.
+{% endblock %}
+
+{% block err_actions %}
+    <a href="/" class="err-btn err-btn-primary">
+        <i class="fa fa-house"></i> Accueil
+    </a>
+    <a href="/catalogue" class="err-btn err-btn-ghost">
+        <i class="fa fa-book-open"></i> Catalogue
+    </a>
+{% endblock %}

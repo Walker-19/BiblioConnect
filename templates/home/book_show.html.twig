@@ -478,6 +478,30 @@
                     </button>
                 {% endif %}
             </div>
+            <div style="margin-top:12px; color:#f59e0b; font-size:1.1rem;">
+                {% if book.averageRating is not null %}
+                    {% for i in 1..5 %}
+                        {% if i <= book.averageRating|round(0, 'floor') %}
+                            <i class="fa-solid fa-star"></i>
+                        {% elseif i - book.averageRating < 1 %}
+                            <span style="position:relative; display:inline-block; color:#fbbf24;">
+                                <i class="fa-solid fa-star"></i>
+                                <span style="position:absolute; top:0; left:0; width:{{ (book.averageRating - (i - 1)) * 100 }}%; overflow:hidden; white-space:nowrap; color:#d1d5db;">
+                                </span>
+                            </span>
+                        {% else %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span style="font-size:.85rem;font-weight:500;color:#9ca3af; margin-left:6px;">
+                        ({{ book.averageRating|number_format(1, '.', ',') }}/5)
+                    </span>
+                {% else %}
+                    <span style="font-size:.85rem;font-weight:500;color:#9ca3af;">
+                        Pas encore noté
+                    </span>
+                {% endif %}
+                </div>
         </div>
     </div>
 
@@ -644,11 +668,11 @@
 
 </div>
 
-{# ── JS : flatpickr ── #}
-<script src="{{ asset('scripts/flatpickr.js') }}"></script>
+{# ── JS : flatpickr (chargement asynchrone à la demande) ── #}
 <script>
 (function () {
-    // Reserved ranges passed from the controller
+    var FLATPICKR_URL = "{{ asset('scripts/flatpickr.js') }}";
+
     var reservedRanges = [
         {% for r in listReservation %}
         {
@@ -658,41 +682,66 @@
         {% endfor %}
     ];
 
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    var fp = flatpickr("#datePicker", {
-        mode:     "range",
-        inline:   true,
-        dateFormat: "Y-m-d",
-        minDate:  "today",
-        disable:  reservedRanges,
-        appendTo: document.querySelector(".fp-inline-container"),
-
-        onChange: function (selectedDates) {
-            var fmt = function (d) {
-                return d.toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", year:"numeric"});
+    function loadFlatpickr() {
+        return new Promise(function (resolve) {
+            if (window.flatpickr) { resolve(); return; }
+            var s = document.createElement('script');
+            s.src = FLATPICKR_URL;
+            s.async = true;
+            s.onload = resolve;
+            s.onerror = function () {
+                console.error('Impossible de charger flatpickr depuis : ' + FLATPICKR_URL);
             };
+            document.head.appendChild(s);
+        });
+    }
 
-            if (selectedDates.length >= 1) {
-                document.getElementById("dateDebutDisplay").value = fmt(selectedDates[0]);
-                document.getElementById("dateDebut").value = selectedDates[0].toISOString().slice(0, 10);
-            } else {
-                document.getElementById("dateDebutDisplay").value = "";
-                document.getElementById("dateDebut").value = "";
+    function initCalendar() {
+        var input = document.getElementById('datePicker');
+        if (!input) return;
+
+        loadFlatpickr().then(function () {
+            // Détruire l'instance précédente si Turbo a récyclé la page
+            if (input._flatpickr) {
+                input._flatpickr.destroy();
             }
 
-            if (selectedDates.length === 2) {
-                document.getElementById("dateFinDisplay").value = fmt(selectedDates[1]);
-                document.getElementById("dateFin").value = selectedDates[1].toISOString().slice(0, 10);
-                document.getElementById("btnReserve").disabled = false;
-            } else {
-                document.getElementById("dateFinDisplay").value = "";
-                document.getElementById("dateFin").value = "";
-                document.getElementById("btnReserve").disabled = true;
-            }
-        }
-    });
+            flatpickr(input, {
+                mode:       'range',
+                inline:     true,
+                dateFormat: 'Y-m-d',
+                minDate:    'today',
+                disable:    reservedRanges,
+                appendTo:   document.querySelector('.fp-inline-container'),
+
+                onChange: function (selectedDates) {
+                    var fmt = function (d) {
+                        return d.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                    };
+
+                    if (selectedDates.length >= 1) {
+                        document.getElementById('dateDebutDisplay').value = fmt(selectedDates[0]);
+                        document.getElementById('dateDebut').value = selectedDates[0].toISOString().slice(0, 10);
+                    } else {
+                        document.getElementById('dateDebutDisplay').value = '';
+                        document.getElementById('dateDebut').value = '';
+                    }
+
+                    if (selectedDates.length === 2) {
+                        document.getElementById('dateFinDisplay').value = fmt(selectedDates[1]);
+                        document.getElementById('dateFin').value = selectedDates[1].toISOString().slice(0, 10);
+                        document.getElementById('btnReserve').disabled = false;
+                    } else {
+                        document.getElementById('dateFinDisplay').value = '';
+                        document.getElementById('dateFin').value = '';
+                        document.getElementById('btnReserve').disabled = true;
+                    }
+                }
+            });
+        });
+    }
+
+    document.addEventListener('turbo:load', initCalendar);
 })();
 </script>
 

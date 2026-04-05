@@ -48,7 +48,7 @@ final class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/roles', name: 'update_roles', methods: ['POST'])]
+    #[Route('/{id}/roles', name: 'update_roles')]
     public function updateRoles(User $user, Request $request, EntityManagerInterface $em): Response
     {
         $currentUser = $this->getUser();

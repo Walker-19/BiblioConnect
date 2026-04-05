@@ -43,9 +43,17 @@ class BookType extends AbstractType
                 ],
             ])
             ->add('stock', IntegerType::class, [
-                'label' => 'Stock',
+                'label' => 'Stock disponible',
                 'attr' => [
-                    'placeholder' => 'Entrez le nombre d\'exemplaires disponibles',
+                    'placeholder' => 'Exemplaires disponibles',
+                    'min' => 0,
+                ],
+            ])
+            ->add('quantity', IntegerType::class, [
+                'label' => 'Quantité totale',
+                'attr' => [
+                    'placeholder' => 'Nombre total d\'exemplaires',
+                    'min' => 0,
                 ],
             ])
             ->add('image', FileType::class, [

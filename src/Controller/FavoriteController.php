@@ -15,7 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class FavoriteController extends AbstractController
 {
-    #[Route('/favorite/toggle/{id}', name: 'app_favorite_toggle', methods: ['POST'])]
+    #[Route('/favorite/toggle/{id}', name: 'app_favorite_toggle')]
     public function toggle(Book $book, FavoriteRepository $favoriteRepo, EntityManagerInterface $em): JsonResponse
     {
         $user     = $this->getUser();

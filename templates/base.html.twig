@@ -30,7 +30,7 @@
         <header class="nb">
             <div class="nb-inner">
 
-                {# ── Top bar ──────────────────────────────────────────── #}
+                {# ── barre de navigation ──────────────────────────────────────────── #}
                 <div class="nb-top">
 
                     <a href="{{ path('app_home') }}" class="nb-logo">
@@ -53,7 +53,7 @@
 
                     <div class="nb-actions">
                         {% if app.user %}
-                            <a href="{{ path('app_favorites') }}" class="nb-btn nb-btn-ghost">
+                            <a href="{{ path('app_profile') }}" class="nb-btn nb-btn-ghost">
                                 <i class="fa-regular fa-heart"></i>
                                 <span class="nb-btn-label">Favoris</span>
                             </a>
@@ -74,7 +74,7 @@
                     </div>
                 </div>
 
-                {# ── Bottom nav ───────────────────────────────────────── #}
+                {# barre de navigation mobile #}
                 <nav class="nb-nav" id="nb-nav" aria-label="Navigation principale">
 
                     <a href="{{ path('app_home') }}"

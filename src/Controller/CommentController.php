@@ -47,7 +47,7 @@ final class CommentController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/comments/{id}/status/{status}', name: 'admin_comment_status', methods: ['POST'])]
+    #[Route('/admin/comments/{id}/status/{status}', name: 'admin_comment_status')]
     public function changeStatus(Comment $comment, string $status, EntityManagerInterface $em): Response
     {
         $allowed = ['published', 'pending', 'rejected'];
@@ -64,7 +64,7 @@ final class CommentController extends AbstractController
         return $this->redirectToRoute('admin_comments');
     }
 
-    #[Route('/admin/comments/{id}/delete', name: 'admin_comment_delete', methods: ['POST'])]
+    #[Route('/admin/comments/{id}/delete', name: 'admin_comment_delete')]
     public function delete(Comment $comment, Request $request, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete_comment_' . $comment->getId(), $request->request->get('_token'))) {

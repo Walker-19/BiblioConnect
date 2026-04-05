@@ -23,6 +23,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            access_denied_handler: App\Security\AccessDeniedHandler
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -41,8 +42,10 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/admin,      roles: ROLE_ADMIN }
+        - { path: ^/librarian,  roles: ROLE_LIBRARIAN }
+        - { path: ^/profile,    roles: ROLE_USER }
+        - { path: ^/reservation, roles: ROLE_USER }
 
 when@test:
     security:

@@ -90,9 +90,9 @@
                             </td>
                             <td class="col-right">
                                 <div class="dt-actions">
-                                    <button class="dt-btn dt-btn-view" onclick="showBookDetails({{ book.id }}, '{{ book.title }}', '{{ book.author.getAllName() }}', '{{ book.yearPublication }}', '{{ book.stock }}', '{{ book.language.nom }}', '{{ book.description|replace({'"': '\"'}) }}', '{{ book.isbn }}', '{{ book.image }}')">
+                                    <a href="{{ path('admin_book_show', {'id': book.id}) }}" class="dt-btn dt-btn-view">
                                         <i class="fas fa-eye"></i> Détails
-                                    </button>
+                                    </a>
                                     <a href="{{ path('admin_book_edit', {'id': book.id}) }}" class="dt-btn dt-btn-edit">
                                         <i class="fas fa-pen"></i> Éditer
                                     </a>
@@ -112,68 +112,6 @@
     {# Import des modals #}
     {% include 'dashboard/book/modals.html.twig' %}
 
-    {# ── MODAL DÉTAILS LIVRE ── #}
-    <div id="book-details-overlay" onclick="closeModal('book-details')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
-        <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; padding:1.5rem; width:100%; max-width:700px; margin: 0 1rem; max-height: 85vh; overflow-y: auto;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
-                <span style="font-size:15px; font-weight:500;"><i class="fas fa-book"></i> Détails du livre</span>
-                <button onclick="closeModal('book-details')" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888780;">✕</button>
-            </div>
-
-            <div style="display: grid; gap: 16px;">
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start;">
-                    <div style="text-align: center;">
-                        <img id="details-book-cover" src="" alt="Couverture" style="width: 100%; max-width: 200px; height: auto; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    </div>
-                    <div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Titre</label>
-                            <p id="details-book-title" style="margin: 0; font-size: 16px; font-weight: 500; color: #1f2937;"></p>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Auteur</label>
-                            <p id="details-book-author" style="margin: 0; color: #555;"></p>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Langue</label>
-                            <p id="details-book-language" style="margin: 0; background: #f0f3ff; color: #667eea; padding: 4px 8px; border-radius: 3px; display: inline-block; font-size: 12px;"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                        <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Année de publication</label>
-                        <p id="details-book-year" style="margin: 0; color: #555;"></p>
-                    </div>
-                    <div>
-                        <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Stock</label>
-                        <p id="details-book-stock" style="margin: 0; color: #555;"></p>
-                    </div>
-                </div>
-
-                <div>
-                    <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">ISBN</label>
-                    <p id="details-book-isbn" style="margin: 0; color: #555;"></p>
-                </div>
-
-                <div>
-                    <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Description</label>
-                    <p id="details-book-description" style="margin: 0; color: #555; line-height: 1.5; max-height: 150px; overflow-y: auto;"></p>
-                </div>
-
-                <div>
-                    <label style="font-weight: 600; color: #999; font-size: 12px; text-transform: uppercase;">Catégories</label>
-                    <div id="details-book-categories" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-                </div>
-            </div>
-
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:1.5rem;">
-                <button type="button" class="btn" onclick="closeModal('book-details')"><i class="fas fa-times"></i> Fermer</button>
-            </div>
-        </div>
-    </div>
-
 {% endblock %}
 
 {% block javascripts %}
@@ -183,34 +121,7 @@
     <script>
         {% if form is defined and not form.vars.valid and form.vars.submitted %}
             openModal('book');
-        {% endif %}
-
-        // Fonction pour afficher les détails du livre
-        function showBookDetails(id, title, author, year, stock, language, description, isbn, image) {
-            document.getElementById('details-book-title').textContent = title;
-            document.getElementById('details-book-author').textContent = author;
-            document.getElementById('details-book-language').textContent = language;
-            document.getElementById('details-book-year').textContent = year;
-            document.getElementById('details-book-stock').textContent = stock + ' exemplaire(s)';
-            document.getElementById('details-book-isbn').textContent = isbn;
-            document.getElementById('details-book-description').textContent = description;
-            
-            // Gérer l'image
-            const coverImg = document.getElementById('details-book-cover');
-            if (image) {
-                coverImg.src = '/images/' + image;
-                coverImg.style.background = 'none';
-            } else {
-                coverImg.src = '';
-                coverImg.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                coverImg.innerHTML = '<i class="fas fa-book" style="font-size: 48px; color: white;"></i>';
-            }
-
-            openModal('book-details');
-        }
-
-        {% verbatim %}
-        // Fonction de recherche en temps réel pour les livres
+        {% endif %}        {% verbatim %}
         document.getElementById('book-search').addEventListener('keyup', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const tableRows = document.querySelectorAll('#books-table-body tr');
@@ -226,7 +137,6 @@
                 }
             });
 
-            // Afficher/masquer le message "aucun résultat"
             const noResultsMsg = document.getElementById('no-books-results-msg');
             if (visibleCount === 0 && searchTerm.length > 0) {
                 if (!noResultsMsg) {
@@ -241,14 +151,12 @@
             }
         });
 
-        // Fonction pour réinitialiser la recherche des livres
         function clearBookSearch() {
             document.getElementById('book-search').value = '';
             document.getElementById('book-search').dispatchEvent(new Event('keyup'));
             document.getElementById('book-search').focus();
         }
 
-        // Fermer avec la touche Echap
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('[id$="-overlay"]').forEach(modal => {

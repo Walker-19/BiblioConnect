@@ -1,32 +1,421 @@
 {% extends 'dashboard/dashboard.html.twig' %}
-{% block page_title %}Tableau de bord Admin{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* ── Grille de stats ── */
+        .db-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .db-stat {
+            background: #fff;
+            border: 1px solid #e8e8e4;
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .db-stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .db-stat-body {}
+        .db-stat-val  { font-size: 1.5rem; font-weight: 800; color: #1a1a1a; line-height: 1; }
+        .db-stat-lbl  { font-size: .75rem; color: #888780; margin-top: 3px; }
+
+        /* ── Alertes ── */
+        .db-alerts {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .db-alert {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity .15s;
+        }
+        .db-alert:hover { opacity: .8; }
+        .db-alert-warn  { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+        .db-alert-red   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .db-alert-blue  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+        /* ── Grille de panneaux ── */
+        .db-panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 18px;
+        }
+
+        .db-panel {
+            background: #fff;
+            border: 1px solid #e8e8e4;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        .db-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .db-panel-title {
+            font-size: .85rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .db-panel-link {
+            font-size: .75rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .db-panel-link:hover { text-decoration: underline; }
+
+        .db-panel-body { padding: 0; }
+
+        /* ── Table légère ── */
+        .db-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+        .db-table th {
+            text-align: left;
+            padding: 9px 16px;
+            font-size: .72rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .db-table td { padding: 10px 16px; border-bottom: 1px solid #f9fafb; color: #374151; vertical-align: middle; }
+        .db-table tr:last-child td { border-bottom: none; }
+        .db-table tr:hover td { background: #fafafa; }
+
+        /* ── Badges de statut ── */
+        .s-badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+        .s-pending  { background: #fef9c3; color: #854d0e; }
+        .s-approved { background: #d1fae5; color: #065f46; }
+        .s-rejected { background: #fee2e2; color: #991b1b; }
+        .s-canceled { background: #f3f4f6; color: #6b7280; }
+        .s-completed{ background: #dbeafe; color: #1d4ed8; }
+        .s-overdue  { background: #fce7f3; color: #9d174d; }
+
+        .db-empty {
+            text-align: center;
+            padding: 28px;
+            color: #9ca3af;
+            font-size: .82rem;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Utilisateurs</div>
-            <div class="stat-value">{{ stats.totalUsers }}</div>
-            <div class="stat-sub">+12% depuis hier</div>
+
+{# ── Titre ── #}
+<div style="margin-bottom:20px;">
+    <h1 style="font-size:1.2rem;font-weight:700;color:#1a1a1a;">Tableau de bord</h1>
+    <p style="font-size:.82rem;color:#888780;margin-top:2px;">Bienvenue, {{ app.user.prenom }}. Voici un aperçu de l'activité.</p>
+</div>
+
+{# ── Stats principales ── #}
+<div class="db-stats">
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#eff6ff;">
+            <i class="fa fa-book" style="color:#2563eb;"></i>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Ouvrages</div>
-            <div class="stat-value">{{ stats.totalBooks }}</div>
-            <div class="stat-sub">+5% depuis hier</div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.totalBooks }}</div>
+            <div class="db-stat-lbl">Ouvrages</div>
         </div>
-        {# <div class="stat-card">
-            <div class="stat-label">Réservations</div>
-            <div class="stat-value">{{ stats.totalReservations }}</div>
-            <div class="stat-sub">+8% depuis hier</div>
-        </div> #}
-        <div class="stat-card">
-            <div class="stat-label">Commentaires</div>
-            <div class="stat-value">{{ stats.totalComments }}</div>
-            <div class="stat-sub">+3% depuis hier</div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#f0fdf4;">
+            <i class="fa fa-book-open" style="color:#16a34a;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.availableBooks }}</div>
+            <div class="db-stat-lbl">Disponibles</div>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#fdf4ff;">
+            <i class="fa fa-users" style="color:#9333ea;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.totalUsers }}</div>
+            <div class="db-stat-lbl">Utilisateurs</div>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#fff7ed;">
+            <i class="fa fa-calendar-check" style="color:#ea580c;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.totalReservations }}</div>
+            <div class="db-stat-lbl">Réservations</div>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#fef9c3;">
+            <i class="fa fa-clock" style="color:#ca8a04;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.pendingReservations }}</div>
+            <div class="db-stat-lbl">En attente</div>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#fff1f2;">
+            <i class="fa fa-triangle-exclamation" style="color:#e11d48;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.overdueReservations }}</div>
+            <div class="db-stat-lbl">En retard</div>
+        </div>
+    </div>
+    <div class="db-stat">
+        <div class="db-stat-icon" style="background:#f0f7ff;">
+            <i class="fa fa-comment" style="color:#0284c7;"></i>
+        </div>
+        <div class="db-stat-body">
+            <div class="db-stat-val">{{ stats.totalComments }}</div>
+            <div class="db-stat-lbl">Commentaires</div>
+        </div>
+    </div>
+</div>
+
+{# ── Alertes actions rapides ── #}
+{% if stats.pendingReservations > 0 or stats.overdueReservations > 0 or stats.pendingComments > 0 %}
+<div class="db-alerts">
+    {% if stats.pendingReservations > 0 %}
+        <a href="{{ path('admin_reservations', {status: 'pending'}) }}" class="db-alert db-alert-warn">
+            <i class="fa fa-clock"></i>
+            {{ stats.pendingReservations }} réservation{{ stats.pendingReservations > 1 ? 's' : '' }} en attente de validation
+        </a>
+    {% endif %}
+    {% if stats.overdueReservations > 0 %}
+        <a href="{{ path('admin_reservations', {status: 'overdue'}) }}" class="db-alert db-alert-red">
+            <i class="fa fa-circle-exclamation"></i>
+            {{ stats.overdueReservations }} retard{{ stats.overdueReservations > 1 ? 's' : '' }} non traité{{ stats.overdueReservations > 1 ? 's' : '' }}
+        </a>
+    {% endif %}
+    {% if stats.pendingComments > 0 %}
+        <a href="{{ path('admin_comments') }}" class="db-alert db-alert-blue">
+            <i class="fa fa-comment-dots"></i>
+            {{ stats.pendingComments }} commentaire{{ stats.pendingComments > 1 ? 's' : '' }} à modérer
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{# ── Panneaux ── #}
+<div class="db-panels">
+
+    {# Dernières réservations #}
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <span class="db-panel-title"><i class="fa fa-calendar-alt" style="color:#ea580c;"></i> Dernières réservations</span>
+            <a href="{{ path('admin_reservations') }}" class="db-panel-link">Tout voir →</a>
+        </div>
+        <div class="db-panel-body">
+            {% if lastReservations|length > 0 %}
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>Livre</th>
+                        <th>Utilisateur</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in lastReservations %}
+                    <tr>
+                        <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            {{ r.book ? r.book.title : '—' }}
+                        </td>
+                        <td>{{ r.user ? r.user.prenom ~ ' ' ~ r.user.nom : '—' }}</td>
+                        <td>
+                            {% set s = r.status %}
+                            <span class="s-badge s-{{ s }}">
+                                {% if s == 'pending' %}En attente
+                                {% elseif s == 'approved' %}Approuvée
+                                {% elseif s == 'rejected' %}Refusée
+                                {% elseif s == 'canceled' %}Annulée
+                                {% elseif s == 'completed' %}Terminée
+                                {% elseif s == 'overdue' %}En retard
+                                {% else %}{{ s }}{% endif %}
+                            </span>
+                        </td>
+                        <td style="color:#9ca3af;">{{ r.createdAt|date('d/m/Y') }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div class="db-empty"><i class="fa fa-calendar-xmark" style="display:block;font-size:1.5rem;opacity:.3;margin-bottom:6px;"></i>Aucune réservation</div>
+            {% endif %}
         </div>
     </div>
 
-    <h2>Gestion des utilisateurs</h2>
-    <p>Bienvenue dans l'espace administrateur ! Vous pouvez gérer les utilisateurs, les ouvrages et les réservations depuis cette interface.</p>
+    {# Commentaires à modérer #}
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <span class="db-panel-title"><i class="fa fa-comment-dots" style="color:#0284c7;"></i> Commentaires à modérer</span>
+            <a href="{{ path('admin_comments') }}" class="db-panel-link">Tout voir →</a>
+        </div>
+        <div class="db-panel-body">
+            {% if lastComments|length > 0 %}
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>Auteur</th>
+                        <th>Livre</th>
+                        <th>Note</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in lastComments %}
+                    <tr>
+                        <td>{{ c.user ? c.user.prenom ~ ' ' ~ c.user.nom : '—' }}</td>
+                        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.book ? c.book.title : '—' }}</td>
+                        <td>
+                            <span style="color:#f59e0b;">
+                                {% for i in 1..c.note %}<i class="fa-solid fa-star" style="font-size:.65rem;"></i>{% endfor %}
+                            </span>
+                        </td>
+                        <td style="color:#9ca3af;">{{ c.createdAt|date('d/m/Y') }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div class="db-empty"><i class="fa fa-face-smile" style="display:block;font-size:1.5rem;opacity:.3;margin-bottom:6px;"></i>Aucun commentaire en attente</div>
+            {% endif %}
+        </div>
+    </div>
 
-    <!-- Contenu spécifique à l'administrateur -->
+    {# Derniers utilisateurs inscrits #}
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <span class="db-panel-title"><i class="fa fa-user-plus" style="color:#9333ea;"></i> Nouveaux utilisateurs</span>
+            <a href="{{ path('admin_user_index') }}" class="db-panel-link">Tout voir →</a>
+        </div>
+        <div class="db-panel-body">
+            {% if lastUsers|length > 0 %}
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for u in lastUsers %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    {{ u.prenom|slice(0,1)|upper }}{{ u.nom|slice(0,1)|upper }}
+                                </div>
+                                <span style="font-weight:600;">{{ u.prenom }} {{ u.nom }}</span>
+                            </div>
+                        </td>
+                        <td style="color:#6b7280;font-size:.75rem;">{{ u.email }}</td>
+                        <td>
+                            {% if 'ROLE_ADMIN' in u.roles %}
+                                <span class="s-badge" style="background:#fdf4ff;color:#9333ea;">Admin</span>
+                            {% elseif 'ROLE_LIBRARIAN' in u.roles %}
+                                <span class="s-badge" style="background:#eff6ff;color:#2563eb;">Bibliothécaire</span>
+                            {% else %}
+                                <span class="s-badge s-canceled">Utilisateur</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div class="db-empty">Aucun utilisateur</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Livres à faible stock #}
+    <div class="db-panel">
+        <div class="db-panel-head">
+            <span class="db-panel-title"><i class="fa fa-triangle-exclamation" style="color:#dc2626;"></i> Stock faible</span>
+            <a href="{{ path('admin_books') }}" class="db-panel-link">Gérer →</a>
+        </div>
+        <div class="db-panel-body">
+            {% if lowStockBooks|length > 0 %}
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>Livre</th>
+                        <th>Auteur</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for b in lowStockBooks %}
+                    <tr>
+                        <td style="font-weight:600;">{{ b.title }}</td>
+                        <td style="color:#6b7280;">{{ b.author ? b.author.getAllName() : '—' }}</td>
+                        <td>
+                            {% if b.stock == 0 %}
+                                <span class="s-badge s-rejected">Épuisé</span>
+                            {% elseif b.stock == 1 %}
+                                <span class="s-badge s-overdue">1 ex.</span>
+                            {% else %}
+                                <span class="s-badge s-pending">{{ b.stock }} ex.</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div class="db-empty"><i class="fa fa-circle-check" style="display:block;font-size:1.5rem;opacity:.3;margin-bottom:6px;color:#16a34a;"></i>Tous les stocks sont suffisants</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

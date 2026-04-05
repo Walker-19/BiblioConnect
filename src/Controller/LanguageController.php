@@ -10,7 +10,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_ADMIN')]
 final class LanguageController extends AbstractController
 {
     #[Route('/admin/languages', name: 'admin_languages')]
@@ -37,7 +39,7 @@ final class LanguageController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/language/{id}/edit', name: 'admin_language_edit', methods: ['GET', 'POST'])]
+    #[Route('/admin/language/{id}/edit', name: 'admin_language_edit')]
     public function editLanguage(Language $language, Request $request, EntityManagerInterface $em): Response 
     {
         $form = $this->createForm(LanguageType::class, $language);
@@ -55,7 +57,7 @@ final class LanguageController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/language/{id}/delete', name: 'admin_language_delete', methods: ['POST'])]
+    #[Route('/admin/language/{id}/delete', name: 'admin_language_delete')]
     public function deleteLanguage(Language $language, Request $request, EntityManagerInterface $em): Response 
     {
         if ($this->isCsrfTokenValid('delete' . $language->getId(), $request->request->get('_token'))) {

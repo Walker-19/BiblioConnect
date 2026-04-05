@@ -26,13 +26,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    #[Assert\NotBlank(message: 'Le mot de passe ne peut pas être vide.', groups: ['registration'])]
+    #[Assert\Regex(
+        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?#&]{8,}$/',
+        message: 'Le mot de passe doit comporter au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.',
+        groups: ['registration']
+    )]
+    private ?string $plainPassword = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom ne peut pas être vide.')]
@@ -57,12 +65,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
     private Collection $comments;
 
-    /**
-     * @var Collection<int, Rating>
-     */
-    #[ORM\OneToMany(targetEntity: Rating::class, mappedBy: 'user_id')]
-    private Collection $ratings;
-
+   
     /**
      * @var Collection<int, Favorite>
      */
@@ -73,7 +76,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->reservations = new ArrayCollection();
         $this->comments = new ArrayCollection();
-        $this->ratings = new ArrayCollection();
         $this->favorites = new ArrayCollection();
     }
 
@@ -137,6 +139,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
 
         return $this;
     }
@@ -248,35 +262,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Rating>
-     */
-    public function getRatings(): Collection
-    {
-        return $this->ratings;
-    }
+  
 
-    public function addRating(Rating $rating): static
-    {
-        if (!$this->ratings->contains($rating)) {
-            $this->ratings->add($rating);
-            $rating->setUserId($this);
-        }
+   
 
-        return $this;
-    }
-
-    public function removeRating(Rating $rating): static
-    {
-        if ($this->ratings->removeElement($rating)) {
-            // set the owning side to null (unless already changed)
-            if ($rating->getUserId() === $this) {
-                $rating->setUserId(null);
-            }
-        }
-
-        return $this;
-    }
+   
 
     /**
      * @return Collection<int, Favorite>

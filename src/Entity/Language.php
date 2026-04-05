@@ -6,8 +6,10 @@ use App\Repository\LanguageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LanguageRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_language_name', columns: ['nom'])]
 class Language
 {
     #[ORM\Id]
@@ -15,7 +17,8 @@ class Language
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 191)]
+    #[Assert\NotBlank(message: 'Le nom de la langue est obligatoire.')]
     private ?string $nom = null;
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Book;
 use App\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,6 +15,18 @@ class CommentRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Comment::class);
+    }
+
+    public function getAverageRattingByBook(Book $book): ?float
+    {
+        $result = $this->createQueryBuilder('c')
+            ->select('AVG(c.note)')
+            ->where('c.book = :book')
+            ->setParameter('book', $book)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result !== null ? (float) $result : null;
     }
 
     //    /**

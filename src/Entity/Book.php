@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
@@ -17,6 +18,7 @@ class Book
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre du livre est obligatoire.')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -61,14 +63,10 @@ class Book
     #[ORM\Column(length: 13, nullable: true)]
     private ?string $isbn = null;
 
-    /**
-     * @var Collection<int, Rating>
-     */
-    #[ORM\OneToMany(targetEntity: Rating::class, mappedBy: 'book_id')]
-    private Collection $ratings;
-
 
     private ?float $averageRating = null;
+
+
 
     /**
      * @var Collection<int, Favorite>
@@ -84,7 +82,6 @@ class Book
         $this->categories = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->comments = new ArrayCollection();
-        $this->ratings = new ArrayCollection();
         $this->favorites = new ArrayCollection();
     }
     public function getId(): ?int
@@ -286,46 +283,13 @@ class Book
         return $this;
     }
 
-    /**
-     * @return Collection<int, Rating>
-     */
-    public function getRatings(): Collection
-    {
-        return $this->ratings;
-    }
+  
 
-    public function addRating(Rating $rating): static
-    {
-        if (!$this->ratings->contains($rating)) {
-            $this->ratings->add($rating);
-            $rating->setBookId($this);
-        }
+   
 
-        return $this;
-    }
 
-    public function removeRating(Rating $rating): static
-    {
-        if ($this->ratings->removeElement($rating)) {
-            // set the owning side to null (unless already changed)
-            if ($rating->getBookId() === $this) {
-                $rating->setBookId(null);
-            }
-        }
-
-        return $this;
-    }
     
-    public function getAverageRating(): ?float
-    {
-        return $this->averageRating;
-    }
-    public function setAverageRating(?float $averageRating): static
-    {
-        $this->averageRating = $averageRating;
-
-        return $this;
-    }
+  
 
     /**
      * @return Collection<int, Favorite>
@@ -345,5 +309,17 @@ class Book
         $this->quantity = $quantity;
 
         return $this;
+    }
+
+    public function setAverageRating(float $averageRating): static
+    {
+        $this->averageRating = $averageRating;
+
+        return $this;
+    }
+
+    public function getAverageRating(): ?float
+    {
+        return $this->averageRating;
     }
 }

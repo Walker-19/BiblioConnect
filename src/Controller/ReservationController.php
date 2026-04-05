@@ -22,7 +22,7 @@ final class ReservationController extends AbstractController
     }
 
     #[IsGranted('ROLE_USER')]
-    #[Route('/reservation/{id}', name: 'app_reservation_create', methods: ['POST'])]
+    #[Route('/reservation/{id}', name: 'app_reservation_create')]
     public function createReservation(Book $book, Request $request, EntityManagerInterface $em): Response
     {
         $dateDebutStr = $request->request->get('dateDebut');
@@ -104,7 +104,7 @@ final class ReservationController extends AbstractController
     }
 
     #[IsGranted('ROLE_LIBRARIAN')]
-    #[Route('/admin/reservations/{id}/status/{status}', name: 'admin_reservation_status', methods: ['POST'])]
+    #[Route('/admin/reservations/{id}/status/{status}', name: 'admin_reservation_status')]
     public function changeStatus(Reservation $reservation, string $status, EntityManagerInterface $em): Response
     {
         $allowed = [

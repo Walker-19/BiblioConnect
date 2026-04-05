@@ -1,0 +1,22 @@
+{% extends 'bundles/TwigBundle/Exception/error.html.twig' %}
+
+{% block title %}Erreur interne{% endblock %}
+
+{% block err_icon %}<div class="err-icon">⚙️</div>{% endblock %}
+
+{% block err_title %}Erreur interne du serveur{% endblock %}
+
+{% block err_desc %}
+    Quelque chose s'est mal passé de notre côté.
+    Notre équipe a été alertée et travaille à résoudre le problème.
+    Veuillez réessayer dans quelques instants.
+{% endblock %}
+
+{% block err_actions %}
+    <a href="/" class="err-btn err-btn-primary">
+        <i class="fa fa-house"></i> Accueil
+    </a>
+    <a href="javascript:location.reload()" class="err-btn err-btn-ghost">
+        <i class="fa fa-rotate-right"></i> Réessayer
+    </a>
+{% endblock %}

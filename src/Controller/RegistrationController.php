@@ -22,15 +22,15 @@ public function index(Request $request, UserPasswordHasherInterface $passwordHas
 
     
     if ($form->isSubmitted() && $form->isValid()) {
-        $plainPassword = $form->get('password')->get('first')->getData();
-        $user->setRoles(['ROLE_USER']);
         $user->setPassword(
             $passwordHasher->hashPassword(
                 $user,
-                $plainPassword
+                $user->getPlainPassword()
             )
         );
-        $plainPassword = null;
+        $user->setPlainPassword(null);
+        $user->setRoles(['ROLE_USER']);
+        $user->setCreatedAt(new \DateTimeImmutable());
         $em->persist($user);
         $em->flush();
 

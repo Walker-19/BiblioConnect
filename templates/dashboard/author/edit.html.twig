@@ -1,0 +1,189 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block page_title %}Éditer un auteur{% endblock %}
+{% block title %}Éditer : {{ author.prenom }} {{ author.nom }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .edit-wrapper {
+            max-width: 680px;
+        }
+
+        .edit-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .edit-header-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .82rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .edit-header-back:hover { text-decoration: underline; }
+
+        .edit-header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .edit-header-sub {
+            font-size: .8rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .edit-card {
+            background: #fff;
+            border: 1px solid #e8e8e4;
+            border-radius: 14px;
+            padding: 28px 32px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+        .form-group label {
+            font-size: .8rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 9px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-family: inherit;
+            color: #111;
+            background: #f9fafb;
+            transition: border-color .15s, box-shadow .15s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102,126,234,.12);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 110px; }
+
+        .form-errors {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            font-size: .82rem;
+            color: #b91c1c;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-size: .875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: background .15s;
+        }
+        .btn-primary { background: #667eea; color: #fff; }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-ghost { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .btn-ghost:hover { background: #e5e7eb; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="edit-wrapper">
+
+    <div class="edit-header">
+        <div>
+            <a href="{{ path('admin_author') }}" class="edit-header-back">
+                <i class="fa fa-arrow-left"></i> Retour aux auteurs
+            </a>
+            <h1>{{ author.prenom }} {{ author.nom }}</h1>
+            <div class="edit-header-sub">
+                {{ author.books|length }} livre{{ author.books|length != 1 ? 's' : '' }} associé{{ author.books|length != 1 ? 's' : '' }}
+            </div>
+        </div>
+    </div>
+
+    <div class="edit-card">
+
+        {% if form.vars.errors|length > 0 %}
+            <div class="form-errors">
+                <i class="fa fa-circle-exclamation"></i>
+                {% for error in form.vars.errors %}{{ error.message }}{% endfor %}
+            </div>
+        {% endif %}
+
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.prenom) }}
+                    {{ form_widget(form.prenom) }}
+                    {{ form_errors(form.prenom) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.nom) }}
+                    {{ form_widget(form.nom) }}
+                    {{ form_errors(form.nom) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.bibliographie) }}
+                {{ form_widget(form.bibliographie) }}
+                {{ form_errors(form.bibliographie) }}
+            </div>
+
+            {{ form_rest(form) }}
+
+            <div class="form-actions">
+                <a href="{{ path('admin_author') }}" class="btn btn-ghost">
+                    <i class="fa fa-xmark"></i> Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-floppy-disk"></i> Enregistrer
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+
+</div>
+{% endblock %}

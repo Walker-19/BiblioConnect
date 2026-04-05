@@ -1,0 +1,318 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block page_title %}Détails — {{ book.title }}{% endblock %}
+{% block title %}{{ book.title }} — Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard-tables.css') }}">
+    <style>
+        .book-show-container { display: flex; flex-direction: column; gap: 24px; }
+
+        /* ── Breadcrumb ── */
+        .admin-breadcrumb {
+            display: flex; align-items: center; gap: 6px;
+            font-size: .85rem; color: #9ca3af; margin-bottom: 4px;
+        }
+        .admin-breadcrumb a { color: #667eea; text-decoration: none; }
+        .admin-breadcrumb a:hover { text-decoration: underline; }
+        .admin-breadcrumb .sep { color: #d1d5db; }
+
+        /* ── Header card ── */
+        .book-header-card {
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08);
+            padding: 28px 32px;
+            display: grid; grid-template-columns: 180px 1fr; gap: 32px;
+            align-items: start;
+        }
+        .book-cover-admin {
+            width: 100%; aspect-ratio: 2/3;
+            border-radius: 8px; overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+        }
+        .book-cover-admin img { width: 100%; height: 100%; object-fit: cover; }
+        .book-cover-admin .no-cover { font-size: 48px; color: rgba(255,255,255,.7); }
+
+        .book-header-info h1 {
+            margin: 0 0 6px; font-size: 1.7rem; font-weight: 700; color: #1a1a2e;
+        }
+        .book-header-info .author-line {
+            font-size: .95rem; color: #6b7280; margin-bottom: 16px;
+        }
+        .book-header-info .author-line a { color: #667eea; text-decoration: none; }
+        .book-header-info .author-line a:hover { text-decoration: underline; }
+
+        .meta-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px; margin-bottom: 20px;
+        }
+        .meta-item { display: flex; flex-direction: column; gap: 2px; }
+        .meta-item .meta-label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            color: #9ca3af; letter-spacing: .5px;
+        }
+        .meta-item .meta-value { font-size: .9rem; color: #374151; font-weight: 500; }
+
+        .badge-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .badge-lang {
+            background: #eff6ff; color: #2563eb;
+            padding: 4px 10px; border-radius: 20px; font-size: .78rem; font-weight: 600;
+        }
+        .badge-cat {
+            background: #f5f3ff; color: #7c3aed;
+            padding: 4px 10px; border-radius: 20px; font-size: .78rem; font-weight: 600;
+        }
+
+        .description-block {
+            color: #4b5563; line-height: 1.7; font-size: .93rem;
+            border-left: 3px solid #667eea; padding-left: 14px; margin-top: 4px;
+        }
+
+        .action-bar {
+            display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;
+        }
+
+        /* ── Stock badges ── */
+        .stock-ok   { color: #15803d; background: #dcfce7; padding: 3px 10px; border-radius: 20px; font-size: .82rem; font-weight:600; }
+        .stock-low  { color: #92400e; background: #fef3c7; padding: 3px 10px; border-radius: 20px; font-size: .82rem; font-weight:600; }
+        .stock-none { color: #991b1b; background: #fee2e2; padding: 3px 10px; border-radius: 20px; font-size: .82rem; font-weight:600; }
+
+        /* ── Stars ── */
+        .stars { color: #f59e0b; font-size: 1rem; letter-spacing: 2px; }
+
+        /* ── Section cards ── */
+        .section-card {
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08); padding: 24px 28px;
+        }
+        .section-card h2 {
+            font-size: 1rem; font-weight: 600; color: #374151;
+            margin: 0 0 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .section-card h2 i { color: #667eea; }
+
+        /* ── Comments ── */
+        .comment-item {
+            padding: 14px 0; border-bottom: 1px solid #f3f4f6;
+        }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .comment-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: .8rem; font-weight: 600; flex-shrink: 0;
+        }
+        .comment-user { font-size: .88rem; font-weight: 600; color: #374151; }
+        .comment-date { font-size: .78rem; color: #9ca3af; margin-left: auto; }
+        .comment-body { font-size: .88rem; color: #6b7280; line-height: 1.5; padding-left: 44px; }
+        .status-badge {
+            font-size: .72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+        }
+        .status-approuve { background: #dcfce7; color: #15803d; }
+        .status-attente  { background: #fef3c7; color: #92400e; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        /* ── Reservations table ── */
+        .res-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+        .res-table th {
+            text-align: left; padding: 8px 12px; font-size: .78rem;
+            text-transform: uppercase; color: #9ca3af; font-weight: 600;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .res-table td { padding: 10px 12px; border-bottom: 1px solid #f9fafb; color: #374151; }
+        .res-table tr:hover td { background: #f9fafb; }
+
+        .res-pending  { background: #fef3c7; color: #92400e; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+        .res-approved { background: #dcfce7; color: #15803d; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+        .res-completed{ background: #e0e7ff; color: #3730a3; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+        .res-rejected { background: #fee2e2; color: #991b1b; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+        .res-overdue  { background: #ffedd5; color: #c2410c; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+        .res-canceled { background: #f3f4f6; color: #6b7280; padding:2px 8px; border-radius:10px; font-size:.75rem; font-weight:600; }
+
+        .empty-state {
+            text-align: center; padding: 32px; color: #9ca3af; font-size: .9rem;
+        }
+        .empty-state i { font-size: 2rem; display: block; margin-bottom: 8px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="book-show-container">
+
+    {# ── Breadcrumb ── #}
+    <nav class="admin-breadcrumb">
+        <a href="{{ path('admin_books') }}"><i class="fas fa-book"></i> Ouvrages</a>
+        <span class="sep">›</span>
+        <span>{{ book.title }}</span>
+    </nav>
+
+    {# ── Header ── #}
+    <div class="book-header-card">
+        <div class="book-cover-admin">
+            {% if book.image %}
+                <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}">
+            {% else %}
+                <i class="fas fa-book no-cover"></i>
+            {% endif %}
+        </div>
+
+        <div class="book-header-info">
+            <h1>{{ book.title }}</h1>
+
+            <p class="author-line">
+                <i class="fas fa-user-pen"></i>
+                {% if book.author %}
+                    <a href="{{ path('admin_author_edit', {'id': book.author.id}) }}">{{ book.author.getAllName() }}</a>
+                {% else %}
+                    <em>Auteur inconnu</em>
+                {% endif %}
+            </p>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Année</span>
+                    <span class="meta-value">{{ book.yearPublication ?? '—' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">ISBN</span>
+                    <span class="meta-value">{{ book.isbn ?? '—' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Stock</span>
+                    <span class="meta-value">
+                        {% if book.stock > 2 %}
+                            <span class="stock-ok"><i class="fas fa-check"></i> {{ book.stock }}</span>
+                        {% elseif book.stock > 0 %}
+                            <span class="stock-low"><i class="fas fa-triangle-exclamation"></i> {{ book.stock }}</span>
+                        {% else %}
+                            <span class="stock-none"><i class="fas fa-circle-xmark"></i> 0</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Quantité totale</span>
+                    <span class="meta-value">{{ book.quantity ?? '—' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Note moyenne</span>
+                    <span class="meta-value">
+                        {% if avgRating > 0 %}
+                            <span class="stars">
+                                {% for i in 1..5 %}
+                                    {% if i <= avgRating|round %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <small style="color:#9ca3af;">({{ avgRating|number_format(1) }}/5)</small>
+                        {% else %}
+                            <em style="color:#9ca3af;">Aucune note</em>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Ajouté le</span>
+                    <span class="meta-value">{{ book.createdAt ? book.createdAt|date('d/m/Y') : '—' }}</span>
+                </div>
+            </div>
+
+            <div class="badge-list">
+                {% if book.language %}
+                    <span class="badge-lang"><i class="fas fa-globe"></i> {{ book.language.nom }}</span>
+                {% endif %}
+                {% for cat in book.categories %}
+                    <span class="badge-cat"><i class="fas fa-tag"></i> {{ cat.label }}</span>
+                {% endfor %}
+            </div>
+
+            {% if book.description %}
+                <p class="description-block">{{ book.description }}</p>
+            {% endif %}
+
+            <div class="action-bar">
+                <a href="{{ path('admin_book_edit', {'id': book.id}) }}" class="dt-btn dt-btn-edit">
+                    <i class="fas fa-pen"></i> Modifier
+                </a>
+                <a href="{{ path('admin_books') }}" class="dt-btn">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <form method="POST" action="{{ path('admin_book_delete', {'id': book.id}) }}" style="display:inline;"
+                      onsubmit="return confirm('Supprimer définitivement ce livre ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                    <button type="submit" class="dt-btn dt-btn-delete">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ── Commentaires ── #}
+    <div class="section-card">
+        <h2><i class="fas fa-comments"></i> Commentaires <span style="color:#9ca3af;font-weight:400;">({{ comments|length }})</span></h2>
+
+        {% if comments is empty %}
+            <div class="empty-state"><i class="far fa-comment-dots"></i> Aucun commentaire pour ce livre.</div>
+        {% else %}
+            {% for comment in comments %}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">
+                            {{ comment.user.prenom|first|upper }}{{ comment.user.nom|first|upper }}
+                        </div>
+                        <span class="comment-user">{{ comment.user.prenom }} {{ comment.user.nom }}</span>
+                        <span class="stars" style="font-size:.85rem;">
+                            {% for i in 1..5 %}{% if i <= comment.note %}★{% else %}☆{% endif %}{% endfor %}
+                        </span>
+                        <span class="status-badge
+                            {% if comment.status == 'approuvé' or comment.status == 'published' %}status-approuve
+                            {% elseif comment.status == 'en attente' %}status-attente
+                            {% else %}status-rejected{% endif %}">
+                            {{ comment.status }}
+                        </span>
+                        <span class="comment-date">{{ comment.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="comment-body">{{ comment.contents }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {# ── Réservations ── #}
+    <div class="section-card">
+        <h2><i class="fas fa-calendar-check"></i> Réservations <span style="color:#9ca3af;font-weight:400;">({{ reservations|length }})</span></h2>
+
+        {% if reservations is empty %}
+            <div class="empty-state"><i class="far fa-calendar"></i> Aucune réservation pour ce livre.</div>
+        {% else %}
+            <table class="res-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Statut</th>
+                        <th>Créée le</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                        <tr>
+                            <td>{{ r.user.prenom }} {{ r.user.nom }}</td>
+                            <td>{{ r.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ r.dateFin|date('d/m/Y') }}</td>
+                            <td>
+                                <span class="res-{{ r.status }}">{{ r.status }}</span>
+                            </td>
+                            <td>{{ r.createdAt|date('d/m/Y') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

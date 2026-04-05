@@ -1,0 +1,21 @@
+{% extends 'bundles/TwigBundle/Exception/error.html.twig' %}
+
+{% block title %}Accès refusé{% endblock %}
+
+{% block err_icon %}<div class="err-icon">🔒</div>{% endblock %}
+
+{% block err_title %}Accès refusé{% endblock %}
+
+{% block err_desc %}
+    Vous n'avez pas les droits nécessaires pour accéder à cette ressource.
+    Connectez-vous avec un compte autorisé ou retournez à l'accueil.
+{% endblock %}
+
+{% block err_actions %}
+    <a href="/" class="err-btn err-btn-primary">
+        <i class="fa fa-house"></i> Accueil
+    </a>
+    <a href="/login" class="err-btn err-btn-ghost">
+        <i class="fa fa-arrow-right-to-bracket"></i> Se connecter
+    </a>
+{% endblock %}

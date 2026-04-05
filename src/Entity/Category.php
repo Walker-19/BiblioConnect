@@ -6,8 +6,10 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_category_label', columns: ['label'])]
 class Category
 {
     #[ORM\Id]
@@ -15,7 +17,8 @@ class Category
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 191)]
+    #[Assert\NotBlank(message: 'Le label de la catégorie est obligatoire.')]
     private ?string $label = null;
 
     /**

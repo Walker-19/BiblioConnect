@@ -31,6 +31,7 @@ final class BookController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/admin/catalogue', name: 'admin_catalogue')]
     public function adminCatalogue(EntityManagerInterface $em): Response
     {
@@ -42,6 +43,7 @@ final class BookController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/admin/books', name: 'admin_books')]
     public function adminBooks(Request $request, EntityManagerInterface $em): Response 
     {
@@ -89,7 +91,8 @@ final class BookController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/author/add', name: 'admin_author_add', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/author/add', name: 'admin_author_add')]
     public function addAuthor(Request $request, EntityManagerInterface $em): Response
     {
         $author = new Author();
@@ -137,7 +140,8 @@ final class BookController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/language/add', name: 'admin_language_add', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/language/add', name: 'admin_language_add')]
     public function addLanguage(Request $request, EntityManagerInterface $em): Response
     {
         $language = new Language();
@@ -185,7 +189,8 @@ final class BookController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/category/add', name: 'admin_category_add', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/category/add', name: 'admin_category_add')]
     public function addCategory(Request $request, EntityManagerInterface $em): Response
     {
         $category = new Category();
@@ -233,7 +238,8 @@ final class BookController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/book/{id}/edit', name: 'admin_book_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/book/{id}/edit', name: 'admin_book_edit')]
     public function editBook(Request $request, Book $book, EntityManagerInterface $em): Response
     {
         // Sauvegarder l'image originale
@@ -288,7 +294,33 @@ final class BookController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/book/{id}/delete', name: 'admin_book_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/book/{id}', name: 'admin_book_show')]
+    public function adminBookShow(Book $book, EntityManagerInterface $em): Response
+    {
+        $averageRating = $em->getRepository(Comment::class)->getAverageRattingByBook($book) ?? 0.0;
+        $book->setAverageRating($averageRating);
+
+        $comments = $em->getRepository(Comment::class)->findBy(
+            ['book' => $book],
+            ['createdAt' => 'DESC']
+        );
+
+        $reservations = $em->getRepository(Reservation::class)->findBy(
+            ['book' => $book],
+            ['createdAt' => 'DESC']
+        );
+
+        return $this->render('dashboard/book/show.html.twig', [
+            'book'         => $book,
+            'comments'     => $comments,
+            'reservations' => $reservations,
+            'avgRating'    => $averageRating,
+        ]);
+    }
+
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/book/{id}/delete', name: 'admin_book_delete')]
     public function deleteBook(Book $book, EntityManagerInterface $em, Request $request): Response
     {
         // Vérifier le token CSRF
@@ -315,6 +347,8 @@ final class BookController extends AbstractController
     public function bookShow(Book $book, EntityManagerInterface $em): Response
     {
         $reservations = $em->getRepository(Reservation::class)->findBy(['book' => $book, 'status' => Reservation::STATUS_APPROVED]);
+       $averageRating = $em->getRepository(Comment::class)->getAverageRattingByBook($book) ?? 0.0;
+        $book->setAverageRating($averageRating);
         $reservationList = [];
         foreach ($reservations as $reservation) {
             $reservationList[] = [
@@ -359,11 +393,12 @@ final class BookController extends AbstractController
             'canComment'      => $canComment,
             'userComment'     => $userComment,
             'comments'        => $comments,
+            'averageRating'   => $averageRating,
         ]);
     }
 
     #[IsGranted('ROLE_USER')]
-    #[Route('/book/{id}/comment', name: 'app_book_comment', methods: ['POST'])]
+    #[Route('/book/{id}/comment', name: 'app_book_comment')]
     public function addComment(Book $book, Request $request, EntityManagerInterface $em): Response
     {
         // Verify the user has a completed reservation for this book

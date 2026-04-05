@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_comment_user_book', columns: ['user_id', 'book_id'])]
 class Comment
 {
     #[ORM\Id]

@@ -10,7 +10,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_ADMIN')]
 final class CategoryController extends AbstractController
 {
     #[Route('/admin/categories', name: 'admin_categories')]
@@ -37,7 +39,7 @@ final class CategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/category/{id}/edit', name: 'admin_category_edit', methods: ['GET', 'POST'])]
+    #[Route('/admin/category/{id}/edit', name: 'admin_category_edit')]
     public function editCategory(Category $category, Request $request, EntityManagerInterface $em): Response 
     {
         $form = $this->createForm(CategoryType::class, $category);
@@ -55,7 +57,7 @@ final class CategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/category/{id}/delete', name: 'admin_category_delete', methods: ['POST'])]
+    #[Route('/admin/category/{id}/delete', name: 'admin_category_delete')]
     public function deleteCategory(Category $category, Request $request, EntityManagerInterface $em): Response 
     {
         if ($this->isCsrfTokenValid('delete' . $category->getId(), $request->request->get('_token'))) {
