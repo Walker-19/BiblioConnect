@@ -21,7 +21,7 @@ class RatingRepository extends ServiceEntityRepository
     {
         $result = $this->createQueryBuilder('r')
             ->select('AVG(r.rating)')
-            ->where('r.book_id = :book')
+            ->where('r.book = :book')
             ->setParameter('book', $book)
             ->getQuery()
             ->getSingleScalarResult();

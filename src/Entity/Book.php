@@ -70,12 +70,22 @@ class Book
 
     private ?float $averageRating = null;
 
+    /**
+     * @var Collection<int, Favorite>
+     */
+    #[ORM\OneToMany(targetEntity: Favorite::class, mappedBy: 'book', orphanRemoval: true)]
+    private Collection $favorites;
+
+    #[ORM\Column]
+    private ?int $quantity = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->ratings = new ArrayCollection();
+        $this->favorites = new ArrayCollection();
     }
     public function getId(): ?int
     {
@@ -313,6 +323,26 @@ class Book
     public function setAverageRating(?float $averageRating): static
     {
         $this->averageRating = $averageRating;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Favorite>
+     */
+    public function getFavorites(): Collection
+    {
+        return $this->favorites;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): static
+    {
+        $this->quantity = $quantity;
 
         return $this;
     }

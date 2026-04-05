@@ -1,0 +1,517 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Commentaires{% endblock %}
+{% block page_title %}Commentaires{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard-tables.css') }}">
+    <style>
+        /* ── Stats row ── */
+        .cm-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .cm-stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+            border: 1px solid #f1f3f5;
+            text-decoration: none;
+            transition: box-shadow .2s, transform .15s;
+        }
+
+        .cm-stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-2px); }
+        .cm-stat-card.active-filter { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,.25); }
+
+        .cm-stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+
+        .icon-all       { background: #f0f4ff; color: #667eea; }
+        .icon-published { background: #d1fae5; color: #059669; }
+        .icon-pending   { background: #fef3c7; color: #d97706; }
+        .icon-rejected  { background: #fee2e2; color: #e11d48; }
+
+        .cm-stat-value  { font-size: 24px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+        .cm-stat-label  { font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+
+        /* ── Filter pills ── */
+        .cm-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .cm-pill {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1.5px solid #e5e7eb;
+            background: #fff;
+            color: #6b7280;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+        }
+
+        .cm-pill:hover, .cm-pill.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: #fff;
+        }
+
+        /* ── Comment card ── */
+        .cm-card {
+            background: #fff;
+            border: 1px solid #f1f3f5;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.04);
+            transition: box-shadow .15s;
+        }
+
+        .cm-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+
+        .cm-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .cm-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .cm-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-weight: 700;
+            font-size: .8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .cm-author-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: #1a1a2e;
+        }
+
+        .cm-author-email {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .cm-book-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            background: #f5f3ff;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            white-space: nowrap;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cm-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cm-stars {
+            color: #f59e0b;
+            font-size: 14px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .cm-stars .empty { color: #d1d5db; }
+
+        .cm-date {
+            font-size: 11px;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        /* ── Status badge ── */
+        .cm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .cm-badge-published { background: #d1fae5; color: #059669; }
+        .cm-badge-pending   { background: #fef3c7; color: #d97706; }
+        .cm-badge-rejected  { background: #fee2e2; color: #e11d48; }
+
+        /* ── Comment text ── */
+        .cm-body {
+            font-size: 13.5px;
+            color: #374151;
+            line-height: 1.65;
+            padding: 12px 14px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            border-left: 3px solid #e5e7eb;
+        }
+
+        /* ── Actions row ── */
+        .cm-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .cm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .15s, transform .1s;
+        }
+
+        .cm-btn:hover { transform: translateY(-1px); }
+        .cm-btn-approve  { background: #d1fae5; color: #059669; }
+        .cm-btn-approve:hover { background: #a7f3d0; }
+        .cm-btn-pending  { background: #fef3c7; color: #d97706; }
+        .cm-btn-pending:hover { background: #fde68a; }
+        .cm-btn-reject   { background: #fee2e2; color: #e11d48; }
+        .cm-btn-reject:hover { background: #fecaca; }
+        .cm-btn-delete   { background: #f3f4f6; color: #6b7280; margin-left: auto; }
+        .cm-btn-delete:hover { background: #e5e7eb; }
+
+        /* ── Empty state ── */
+        .cm-empty {
+            text-align: center;
+            padding: 60px 24px;
+            color: #9ca3af;
+        }
+
+        .cm-empty i { font-size: 2.5rem; opacity: .3; display: block; margin-bottom: 12px; }
+        .cm-empty p { font-size: 14px; margin: 0; }
+
+        /* ── Search ── */
+        .cm-search-wrap {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .cm-search-wrap .cm-search-field {
+            flex: 1;
+            position: relative;
+        }
+
+        .cm-search-wrap input {
+            width: 100%;
+            padding: 9px 38px 9px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #374151;
+            background: #f9fafb;
+            box-sizing: border-box;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .cm-search-wrap input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102,126,234,.12);
+        }
+
+        .cm-search-wrap .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .cm-reset-btn {
+            padding: 9px 14px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #6b7280;
+            white-space: nowrap;
+            transition: background .2s;
+        }
+
+        .cm-reset-btn:hover { background: #e5e7eb; }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Flash messages ── #}
+{% for msg in app.flashes('success') %}
+    <div style="background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;">
+        <i class="fas fa-check-circle"></i> {{ msg }}
+    </div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+    <div style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;">
+        <i class="fas fa-exclamation-circle"></i> {{ msg }}
+    </div>
+{% endfor %}
+
+{# ── En-tête ── #}
+<div class="dt-page-header">
+    <div>
+        <h1><i class="fas fa-comments" style="color:#667eea;margin-right:8px;"></i>Gestion des commentaires</h1>
+        <p>Modérez et gérez les avis laissés par les lecteurs.</p>
+    </div>
+</div>
+
+{# ── Stats ── #}
+<div class="cm-stats">
+    <a href="{{ path('admin_comments') }}"
+       class="cm-stat-card {{ statusFilter == '' ? 'active-filter' : '' }}">
+        <div class="cm-stat-icon icon-all"><i class="fas fa-layer-group"></i></div>
+        <div>
+            <div class="cm-stat-value">{{ counts.all ?? 0 }}</div>
+            <div class="cm-stat-label">Tous</div>
+        </div>
+    </a>
+    <a href="{{ path('admin_comments', {status: 'published'}) }}"
+       class="cm-stat-card {{ statusFilter == 'published' ? 'active-filter' : '' }}">
+        <div class="cm-stat-icon icon-published"><i class="fas fa-circle-check"></i></div>
+        <div>
+            <div class="cm-stat-value">{{ counts.published ?? 0 }}</div>
+            <div class="cm-stat-label">Publiés</div>
+        </div>
+    </a>
+    <a href="{{ path('admin_comments', {status: 'pending'}) }}"
+       class="cm-stat-card {{ statusFilter == 'pending' ? 'active-filter' : '' }}">
+        <div class="cm-stat-icon icon-pending"><i class="fas fa-hourglass-half"></i></div>
+        <div>
+            <div class="cm-stat-value">{{ counts.pending ?? 0 }}</div>
+            <div class="cm-stat-label">En attente</div>
+        </div>
+    </a>
+    <a href="{{ path('admin_comments', {status: 'rejected'}) }}"
+       class="cm-stat-card {{ statusFilter == 'rejected' ? 'active-filter' : '' }}">
+        <div class="cm-stat-icon icon-rejected"><i class="fas fa-ban"></i></div>
+        <div>
+            <div class="cm-stat-value">{{ counts.rejected ?? 0 }}</div>
+            <div class="cm-stat-label">Rejetés</div>
+        </div>
+    </a>
+</div>
+
+{# ── Filter pills ── #}
+<div class="cm-filters">
+    <span style="font-size:12px;color:#6b7280;font-weight:600;">Filtrer :</span>
+    <a href="{{ path('admin_comments') }}"
+       class="cm-pill {{ statusFilter == '' ? 'active' : '' }}">Tous</a>
+    <a href="{{ path('admin_comments', {status: 'published'}) }}"
+       class="cm-pill {{ statusFilter == 'published' ? 'active' : '' }}">Publiés</a>
+    <a href="{{ path('admin_comments', {status: 'pending'}) }}"
+       class="cm-pill {{ statusFilter == 'pending' ? 'active' : '' }}">En attente</a>
+    <a href="{{ path('admin_comments', {status: 'rejected'}) }}"
+       class="cm-pill {{ statusFilter == 'rejected' ? 'active' : '' }}">Rejetés</a>
+</div>
+
+{# ── Search ── #}
+<div class="cm-search-wrap">
+    <div class="cm-search-field">
+        <input type="text" id="cm-search" placeholder="Rechercher par auteur, livre ou contenu…">
+        <i class="fas fa-search search-icon"></i>
+    </div>
+    <button class="cm-reset-btn" onclick="clearSearch()">
+        <i class="fas fa-times"></i> Réinitialiser
+    </button>
+</div>
+
+{# ── Comment list ── #}
+{% if comments is empty %}
+    <div class="cm-empty">
+        <i class="fas fa-comments"></i>
+        <p>Aucun commentaire{{ statusFilter ? ' dans ce statut' : '' }}.</p>
+    </div>
+{% else %}
+    <div id="cm-list">
+        {% set statusLabels = {
+            'published': 'Publié',
+            'pending':   'En attente',
+            'rejected':  'Rejeté'
+        } %}
+        {% set statusBadges = {
+            'published': 'cm-badge-published',
+            'pending':   'cm-badge-pending',
+            'rejected':  'cm-badge-rejected'
+        } %}
+
+        {% for comment in comments %}
+        <div class="cm-card"
+             data-search="{{ comment.user ? (comment.user.prenom ~ ' ' ~ comment.user.nom)|lower : '' }} {{ comment.book ? comment.book.title|lower : '' }} {{ comment.contents|lower }}">
+
+            {# ── Top row ── #}
+            <div class="cm-card-top">
+                <div class="cm-meta">
+                    <div class="cm-avatar">
+                        {{ comment.user ? comment.user.prenom|slice(0,1)|upper ~ comment.user.nom|slice(0,1)|upper : '?' }}
+                    </div>
+                    <div>
+                        <div class="cm-author-name">
+                            {{ comment.user ? comment.user.prenom ~ ' ' ~ comment.user.nom : 'Utilisateur supprimé' }}
+                        </div>
+                        <div class="cm-author-email">{{ comment.user ? comment.user.email : '' }}</div>
+                    </div>
+                    {% if comment.book %}
+                    <div class="cm-book-info">
+                        <i class="fas fa-book"></i>
+                        {{ comment.book.title }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="cm-right">
+                    {# Stars #}
+                    <div class="cm-stars">
+                        {% for s in 1..5 %}
+                            {% if s <= comment.note %}
+                                <span>&#9733;</span>
+                            {% else %}
+                                <span class="empty">&#9733;</span>
+                            {% endif %}
+                        {% endfor %}
+                        <span style="font-size:11px;color:#6b7280;margin-left:4px;">{{ comment.note }}/5</span>
+                    </div>
+
+                    {# Status badge #}
+                    <span class="cm-badge {{ statusBadges[comment.status] ?? '' }}">
+                        <i class="fas fa-circle" style="font-size:7px;"></i>
+                        {{ statusLabels[comment.status] ?? comment.status }}
+                    </span>
+
+                    {# Date #}
+                    <span class="cm-date">
+                        <i class="fas fa-clock" style="opacity:.5;"></i>
+                        {{ comment.createdAt|date('d/m/Y à H:i') }}
+                    </span>
+                </div>
+            </div>
+
+            {# ── Comment body ── #}
+            <div class="cm-body">{{ comment.contents }}</div>
+
+            {# ── Action buttons ── #}
+            <div class="cm-actions">
+                {% if comment.status != 'published' %}
+                    <form method="post" action="{{ path('admin_comment_status', {id: comment.id, status: 'published'}) }}">
+                        <button class="cm-btn cm-btn-approve" type="submit">
+                            <i class="fas fa-check"></i> Publier
+                        </button>
+                    </form>
+                {% endif %}
+                {% if comment.status != 'pending' %}
+                    <form method="post" action="{{ path('admin_comment_status', {id: comment.id, status: 'pending'}) }}">
+                        <button class="cm-btn cm-btn-pending" type="submit">
+                            <i class="fas fa-hourglass-half"></i> Mettre en attente
+                        </button>
+                    </form>
+                {% endif %}
+                {% if comment.status != 'rejected' %}
+                    <form method="post" action="{{ path('admin_comment_status', {id: comment.id, status: 'rejected'}) }}">
+                        <button class="cm-btn cm-btn-reject" type="submit">
+                            <i class="fas fa-ban"></i> Rejeter
+                        </button>
+                    </form>
+                {% endif %}
+
+                {# Delete — pushed to the right #}
+                <form method="post" action="{{ path('admin_comment_delete', {id: comment.id}) }}"
+                      style="margin-left:auto;"
+                      onsubmit="return confirm('Supprimer définitivement ce commentaire ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                    <button class="cm-btn cm-btn-delete" type="submit">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const searchInput = document.getElementById('cm-search');
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#cm-list .cm-card').forEach(function (card) {
+            const text = card.getAttribute('data-search') || '';
+            card.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+}
+
+function clearSearch() {
+    const input = document.getElementById('cm-search');
+    if (!input) return;
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+}
+</script>
+{% endblock %}

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Entity\Author;
+use App\Entity\Comment;
 use App\Entity\Language;
 use App\Entity\Category;
 use App\Entity\Reservation;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class BookController extends AbstractController
 {
@@ -26,6 +28,17 @@ final class BookController extends AbstractController
     {
         return $this->render('book/index.html.twig', [
             'controller_name' => 'BookController',
+        ]);
+    }
+
+    #[Route('/admin/catalogue', name: 'admin_catalogue')]
+    public function adminCatalogue(EntityManagerInterface $em): Response
+    {
+        return $this->render('dashboard/catalogue/index.html.twig', [
+            'books'      => $em->getRepository(Book::class)->findAll(),
+            'categories' => $em->getRepository(Category::class)->findAll(),
+            'languages'  => $em->getRepository(Language::class)->findAll(),
+            'authors'    => $em->getRepository(Author::class)->findAll(),
         ]);
     }
 
@@ -300,22 +313,101 @@ final class BookController extends AbstractController
     }
     #[Route('/show_book/{id}', name: 'app_book_show')]
     public function bookShow(Book $book, EntityManagerInterface $em): Response
-    {   
-        $reservations = $em->getRepository(Reservation::class)->findBy(['book' => $book]);
+    {
+        $reservations = $em->getRepository(Reservation::class)->findBy(['book' => $book, 'status' => Reservation::STATUS_APPROVED]);
         $reservationList = [];
         foreach ($reservations as $reservation) {
             $reservationList[] = [
                 'start' => $reservation->getDateDebut(),
-                'end' => $reservation->getDateFin()
+                'end'   => $reservation->getDateFin()
             ];
         }
 
-        return $this->render('home/book_show.html.twig', [
-            'controller_name' => 'HomeController',
-            'book' => $book,
-            'listReservation' => $reservationList
-        ]); 
+        $isFavorite  = false;
+        $canComment  = false;
+        $userComment = null;
 
+        if ($this->getUser()) {
+            $isFavorite = $em->getRepository(\App\Entity\Favorite::class)
+                ->findOneBy(['user' => $this->getUser(), 'book' => $book]) !== null;
+
+            // User can comment only if they have at least one completed reservation for this book
+            $completedReservation = $em->getRepository(Reservation::class)->findOneBy([
+                'book'   => $book,
+                'user'   => $this->getUser(),
+                'status' => Reservation::STATUS_COMPLETED,
+            ]);
+            $canComment = $completedReservation !== null;
+
+            // Check if the user has already submitted a comment
+            $userComment = $em->getRepository(Comment::class)->findOneBy([
+                'book' => $book,
+                'user' => $this->getUser(),
+            ]);
+        }
+
+        // Fetch all published comments for this book
+        $comments = $em->getRepository(Comment::class)->findBy(
+            ['book' => $book, 'status' => 'published'],
+            ['createdAt' => 'DESC']
+        );
+
+        return $this->render('home/book_show.html.twig', [
+            'book'            => $book,
+            'listReservation' => $reservationList,
+            'isFavorite'      => $isFavorite,
+            'canComment'      => $canComment,
+            'userComment'     => $userComment,
+            'comments'        => $comments,
+        ]);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/book/{id}/comment', name: 'app_book_comment', methods: ['POST'])]
+    public function addComment(Book $book, Request $request, EntityManagerInterface $em): Response
+    {
+        // Verify the user has a completed reservation for this book
+        $completedReservation = $em->getRepository(Reservation::class)->findOneBy([
+            'book'   => $book,
+            'user'   => $this->getUser(),
+            'status' => Reservation::STATUS_COMPLETED,
+        ]);
+
+        if (!$completedReservation) {
+            $this->addFlash('error', 'Vous devez avoir terminé une réservation pour laisser un commentaire.');
+            return $this->redirectToRoute('app_book_show', ['id' => $book->getId()]);
+        }
+
+        $note     = (int) $request->request->get('note', 0);
+        $contents = trim($request->request->get('contents', ''));
+
+        if ($note < 1 || $note > 5 || $contents === '') {
+            $this->addFlash('error', 'La note (1-5) et le commentaire sont obligatoires.');
+            return $this->redirectToRoute('app_book_show', ['id' => $book->getId()]);
+        }
+
+        // Upsert: update existing comment or create a new one
+        $comment = $em->getRepository(Comment::class)->findOneBy([
+            'book' => $book,
+            'user' => $this->getUser(),
+        ]);
+
+        if (!$comment) {
+            $comment = new Comment();
+            $comment->setBook($book);
+            $comment->setUser($this->getUser());
+            $comment->setCreatedAt(new \DateTimeImmutable());
+        }
+
+        $comment->setNote($note);
+        $comment->setContents($contents);
+        $comment->setStatus('published');
+
+        $em->persist($comment);
+        $em->flush();
+
+        $this->addFlash('success', 'Votre commentaire a été publié !');
+        return $this->redirectToRoute('app_book_show', ['id' => $book->getId()]);
     }
 }
 

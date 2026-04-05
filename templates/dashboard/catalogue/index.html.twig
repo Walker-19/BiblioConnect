@@ -1,0 +1,336 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Catalogue{% endblock %}
+{% block page_title %}Catalogue{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard-tables.css') }}">
+{% endblock %}
+
+{% block body %}
+
+{# ── En-tête ── #}
+<div class="dt-page-header">
+    <div>
+        <h1><i class="fas fa-books" style="color:#667eea;margin-right:8px;"></i>Catalogue</h1>
+        <p>Vue d'ensemble de tous les ouvrages, catégories et langues.</p>
+    </div>
+    <div class="dt-page-actions">
+        <a href="{{ path('admin_books') }}" class="dt-btn dt-btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un ouvrage
+        </a>
+    </div>
+</div>
+
+{# ── Statistiques ── #}
+<div class="dt-stats-row">
+    <div class="dt-stat-card">
+        <div class="dt-stat-icon icon-books"><i class="fas fa-book"></i></div>
+        <div>
+            <div class="dt-stat-value">{{ books|length }}</div>
+            <div class="dt-stat-label">Ouvrages</div>
+        </div>
+    </div>
+    <div class="dt-stat-card">
+        <div class="dt-stat-icon icon-authors"><i class="fas fa-user-pen"></i></div>
+        <div>
+            <div class="dt-stat-value">{{ authors|length }}</div>
+            <div class="dt-stat-label">Auteurs</div>
+        </div>
+    </div>
+    <div class="dt-stat-card">
+        <div class="dt-stat-icon icon-categories"><i class="fas fa-tags"></i></div>
+        <div>
+            <div class="dt-stat-value">{{ categories|length }}</div>
+            <div class="dt-stat-label">Catégories</div>
+        </div>
+    </div>
+    <div class="dt-stat-card">
+        <div class="dt-stat-icon icon-languages"><i class="fas fa-language"></i></div>
+        <div>
+            <div class="dt-stat-value">{{ languages|length }}</div>
+            <div class="dt-stat-label">Langues</div>
+        </div>
+    </div>
+</div>
+
+{# ── Onglets ── #}
+<div class="dt-tabs" role="tablist">
+    <button class="dt-tab active" role="tab" onclick="switchTab('tab-books', this)">
+        <i class="fas fa-book"></i> Ouvrages
+        <span class="dt-tab-badge">{{ books|length }}</span>
+    </button>
+    <button class="dt-tab" role="tab" onclick="switchTab('tab-categories', this)">
+        <i class="fas fa-tags"></i> Catégories
+        <span class="dt-tab-badge">{{ categories|length }}</span>
+    </button>
+    <button class="dt-tab" role="tab" onclick="switchTab('tab-languages', this)">
+        <i class="fas fa-language"></i> Langues
+        <span class="dt-tab-badge">{{ languages|length }}</span>
+    </button>
+</div>
+
+{# ══════════════════════════════════════════
+   TAB 1 — OUVRAGES
+══════════════════════════════════════════ #}
+<div class="dt-tab-panel active" id="tab-books">
+
+    <div class="dt-search-wrap">
+        <div class="dt-search-field">
+            <input type="text" id="books-search" placeholder="Rechercher par titre ou auteur…">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <button class="dt-reset-btn" onclick="clearSearch('books-search','books-tbody','data-book-info')">
+            <i class="fas fa-times"></i> Réinitialiser
+        </button>
+    </div>
+
+    <div class="dt-card">
+        {% if books is empty %}
+            <div class="dt-empty">
+                <i class="fas fa-book-open"></i>
+                <p>Aucun ouvrage dans le catalogue.</p>
+            </div>
+        {% else %}
+        <table class="dt-table">
+            <thead>
+                <tr>
+                    <th>Ouvrage</th>
+                    <th>Langue</th>
+                    <th>Catégories</th>
+                    <th>Année</th>
+                    <th>Stock</th>
+                    <th class="col-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="books-tbody">
+                {% for book in books %}
+                <tr data-book-info="{{ book.title|lower }} {{ book.author.getAllName()|lower }}">
+                    <td>
+                        <div class="dt-book-cell">
+                            {% if book.image %}
+                                <img class="dt-book-thumb" src="{{ asset('images/' ~ book.image) }}" alt="">
+                            {% else %}
+                                <div class="dt-book-thumb-ph"><i class="fas fa-book"></i></div>
+                            {% endif %}
+                            <div>
+                                <div class="dt-book-title">{{ book.title }}</div>
+                                <div class="dt-book-author">{{ book.author.getAllName() }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="dt-badge dt-badge-blue">{{ book.language.nom }}</span>
+                    </td>
+                    <td>
+                        <div class="dt-tag-list">
+                            {% for cat in book.categories %}
+                                <span class="dt-badge dt-badge-purple">{{ cat.label }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ book.yearPublication }}</td>
+                    <td>
+                        {% if book.stock > 3 %}
+                            <span class="dt-stock-ok"><i class="fas fa-circle-check"></i> {{ book.stock }}</span>
+                        {% elseif book.stock > 0 %}
+                            <span class="dt-stock-low"><i class="fas fa-triangle-exclamation"></i> {{ book.stock }}</span>
+                        {% else %}
+                            <span class="dt-stock-none"><i class="fas fa-circle-xmark"></i> 0</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-right">
+                        <div class="dt-actions">
+                            <a href="{{ path('admin_book_edit', {id: book.id}) }}" class="dt-btn dt-btn-edit">
+                                <i class="fas fa-pen"></i> Éditer
+                            </a>
+                            <form method="POST" action="{{ path('admin_book_delete', {id: book.id}) }}"
+                                  onsubmit="return confirm('Supprimer « {{ book.title }} » ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                                <button class="dt-btn dt-btn-delete" type="submit">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ══════════════════════════════════════════
+   TAB 2 — CATÉGORIES
+══════════════════════════════════════════ #}
+<div class="dt-tab-panel" id="tab-categories">
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <a href="{{ path('admin_categories') }}" class="dt-btn dt-btn-primary">
+            <i class="fas fa-plus"></i> Ajouter une catégorie
+        </a>
+    </div>
+
+    <div class="dt-search-wrap">
+        <div class="dt-search-field">
+            <input type="text" id="cats-search" placeholder="Rechercher une catégorie…">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <button class="dt-reset-btn" onclick="clearSearch('cats-search','cats-tbody','data-cat-name')">
+            <i class="fas fa-times"></i> Réinitialiser
+        </button>
+    </div>
+
+    <div class="dt-card">
+        {% if categories is empty %}
+            <div class="dt-empty">
+                <i class="fas fa-tags"></i>
+                <p>Aucune catégorie disponible.</p>
+            </div>
+        {% else %}
+        <table class="dt-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Ouvrages</th>
+                    <th class="col-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cats-tbody">
+                {% for cat in categories %}
+                <tr data-cat-name="{{ cat.label|lower }}">
+                    <td>
+                        <span class="dt-badge dt-badge-purple">
+                            <i class="fas fa-tag" style="margin-right:4px;"></i>{{ cat.label }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="color:#6b7280;font-size:12px;">
+                            {{ cat.books is defined ? cat.books|length : 0 }} ouvrage(s)
+                        </span>
+                    </td>
+                    <td class="col-right">
+                        <div class="dt-actions">
+                            <a href="{{ path('admin_category_edit', {id: cat.id}) }}" class="dt-btn dt-btn-edit">
+                                <i class="fas fa-pen"></i> Éditer
+                            </a>
+                            <form method="POST" action="{{ path('admin_category_delete', {id: cat.id}) }}"
+                                  onsubmit="return confirm('Supprimer la catégorie « {{ cat.label }} » ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cat.id) }}">
+                                <button class="dt-btn dt-btn-delete" type="submit">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ══════════════════════════════════════════
+   TAB 3 — LANGUES
+══════════════════════════════════════════ #}
+<div class="dt-tab-panel" id="tab-languages">
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <a href="{{ path('admin_languages') }}" class="dt-btn dt-btn-primary">
+            <i class="fas fa-plus"></i> Ajouter une langue
+        </a>
+    </div>
+
+    <div class="dt-search-wrap">
+        <div class="dt-search-field">
+            <input type="text" id="langs-search" placeholder="Rechercher une langue…">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <button class="dt-reset-btn" onclick="clearSearch('langs-search','langs-tbody','data-lang-name')">
+            <i class="fas fa-times"></i> Réinitialiser
+        </button>
+    </div>
+
+    <div class="dt-card">
+        {% if languages is empty %}
+            <div class="dt-empty">
+                <i class="fas fa-language"></i>
+                <p>Aucune langue disponible.</p>
+            </div>
+        {% else %}
+        <table class="dt-table">
+            <thead>
+                <tr>
+                    <th>Langue</th>
+                    <th>Ouvrages</th>
+                    <th class="col-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="langs-tbody">
+                {% for lang in languages %}
+                <tr data-lang-name="{{ lang.nom|lower }}">
+                    <td>
+                        <span class="dt-badge dt-badge-green">
+                            <i class="fas fa-globe" style="margin-right:4px;"></i>{{ lang.nom }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="color:#6b7280;font-size:12px;">
+                            {{ lang.books is defined ? lang.books|length : 0 }} ouvrage(s)
+                        </span>
+                    </td>
+                    <td class="col-right">
+                        <div class="dt-actions">
+                            <a href="{{ path('admin_language_edit', {id: lang.id}) }}" class="dt-btn dt-btn-edit">
+                                <i class="fas fa-pen"></i> Éditer
+                            </a>
+                            <form method="POST" action="{{ path('admin_language_delete', {id: lang.id}) }}"
+                                  onsubmit="return confirm('Supprimer la langue « {{ lang.nom }} » ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ lang.id) }}">
+                                <button class="dt-btn dt-btn-delete" type="submit">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function switchTab(panelId, btn) {
+    document.querySelectorAll('.dt-tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.dt-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+    btn.classList.add('active');
+}
+
+function filterTable(inputId, tbodyId, dataAttr) {
+    const q = document.getElementById(inputId).value.toLowerCase();
+    document.querySelectorAll('#' + tbodyId + ' tr').forEach(row => {
+        const val = row.getAttribute(dataAttr) || '';
+        row.style.display = val.includes(q) ? '' : 'none';
+    });
+}
+
+function clearSearch(inputId, tbodyId, dataAttr) {
+    document.getElementById(inputId).value = '';
+    filterTable(inputId, tbodyId, dataAttr);
+    document.getElementById(inputId).focus();
+}
+
+document.getElementById('books-search').addEventListener('input', () => filterTable('books-search','books-tbody','data-book-info'));
+document.getElementById('cats-search').addEventListener('input', () => filterTable('cats-search','cats-tbody','data-cat-name'));
+document.getElementById('langs-search').addEventListener('input', () => filterTable('langs-search','langs-tbody','data-lang-name'));
+</script>
+{% endblock %}

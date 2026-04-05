@@ -5,91 +5,100 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/books.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/dashboard-tables.css') }}">
 {% endblock %}
 
 {% block title %}Gestion des livres{% endblock %}
 
 {% block body %}
-    <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-            <div>
-                <h1 style="font-size: 18px; font-weight: 500;">Gestion des livres</h1>
-                <p style="font-size: 13px; color: #888780; margin-top: 4px;">Ajoutez, modifiez ou supprimez des ouvrages.</p>
-            </div>
-            <button class="btn btn-primary" onclick="openModal('book')"><i class="fas fa-plus"></i> Ajouter un livre</button>
-        </div>
-        <div class="action-buttons-grid">
-            <button class="btn btn-secondary" onclick="openModal('author')"><i class="fas fa-user-plus"></i> Ajouter un auteur</button>
-            <button class="btn btn-secondary" onclick="openModal('language')"><i class="fas fa-language"></i> Ajouter une langue</button>
-            <button class="btn btn-secondary" onclick="openModal('category')"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
-        </div>
 
-        <!-- Barre de recherche -->
-        <div style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; gap: 8px;">
-                <div style="flex: 1; position: relative;">
-                    <input 
-                        type="text" 
-                        id="book-search" 
-                        placeholder="Rechercher par titre ou auteur..."
-                        style="width: 100%; padding: 10px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
-                    >
-                    <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none;"></i>
-                </div>
-                <button onclick="clearBookSearch()" style="padding: 10px 16px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
-                    <i class="fas fa-times"></i> Réinitialiser
-                </button>
-            </div>
+    <div class="dt-page-header">
+        <div>
+            <h1><i class="fas fa-book-open" style="color:#667eea;margin-right:8px;"></i>Gestion des ouvrages</h1>
+            <p>Ajoutez, modifiez ou supprimez des ouvrages du catalogue.</p>
         </div>
+        <button class="dt-btn dt-btn-primary" onclick="openModal('book')"><i class="fas fa-plus"></i> Ajouter un ouvrage</button>
+    </div>
 
-    <div class="book-list">
+    <div class="dt-quick-add">
+        <button class="dt-btn dt-btn-secondary" onclick="openModal('author')"><i class="fas fa-user-plus"></i> Ajouter un auteur</button>
+        <button class="dt-btn dt-btn-secondary" onclick="openModal('language')"><i class="fas fa-language"></i> Ajouter une langue</button>
+        <button class="dt-btn dt-btn-secondary" onclick="openModal('category')"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
+    </div>
+
+    <div class="dt-search-wrap">
+        <div class="dt-search-field">
+            <input type="text" id="book-search" placeholder="Rechercher par titre ou auteur…">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <button class="dt-reset-btn" onclick="clearBookSearch()">
+            <i class="fas fa-times"></i> Réinitialiser
+        </button>
+    </div>
+
+    <div class="dt-card">
         {% if listBooks is empty %}
-            <p style="color: #888780; padding: 20px; text-align: center;">Aucun livre disponible.</p>
+            <div class="dt-empty">
+                <i class="fas fa-book-open"></i>
+                <p>Aucun livre disponible.</p>
+            </div>
         {% else %}
-            <table class="book-table">
+            <table class="dt-table">
                 <thead>
                     <tr>
-                        <th style="width: 50px;">Couverture</th>
-                        <th>Titre</th>
-                        <th>Auteur</th>
+                        <th>Ouvrage</th>
                         <th>Langue</th>
                         <th>Catégories</th>
-                        <th style="width: 140px; text-align: center;">Actions</th>
+                        <th>Année</th>
+                        <th>Stock</th>
+                        <th class="col-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="books-table-body">
                     {% for book in listBooks %}
                         <tr data-book-info="{{ book.title|lower }} {{ book.author.getAllName()|lower }}">
                             <td>
-                                {% if book.image %}
-                                    <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}" class="book-cover">
-                                {% else %}
-                                    <div class="book-cover-placeholder"><i class="fas fa-book"></i></div>
-                                {% endif %}
+                                <div class="dt-book-cell">
+                                    {% if book.image %}
+                                        <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}" class="dt-book-thumb">
+                                    {% else %}
+                                        <div class="dt-book-thumb-ph"><i class="fas fa-book"></i></div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="dt-book-title">{{ book.title }}</div>
+                                        <div class="dt-book-author">{{ book.author.getAllName() }}</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td><span class="book-title">{{ book.title }}</span></td>
-                            <td>{{ book.author.getAllName() }}</td>
-                            <td><span style="background: #f0f3ff; color: #667eea; padding: 3px 8px; border-radius: 3px; display: inline-block; font-size: 12px;">{{ book.language.nom }}</span></td>
+                            <td><span class="dt-badge dt-badge-blue">{{ book.language.nom }}</span></td>
                             <td>
-                                <div class="book-categories">
+                                <div class="dt-tag-list">
                                     {% for category in book.categories %}
-                                        <span class="category-badge">{{ category.label }}</span>
+                                        <span class="dt-badge dt-badge-purple">{{ category.label }}</span>
                                     {% endfor %}
                                 </div>
                             </td>
+                            <td>{{ book.yearPublication }}</td>
                             <td>
-                                <div class="actions-cell">
-                                    <button class="btn-table-edit" onclick="showBookDetails({{ book.id }}, '{{ book.title }}', '{{ book.author.getAllName() }}', '{{ book.yearPublication }}', '{{ book.stock }}', '{{ book.language.nom }}', '{{ book.description|replace({'"': '\"'}) }}', '{{ book.isbn }}', '{{ book.image }}')">
+                                {% if book.stock > 3 %}
+                                    <span class="dt-stock-ok"><i class="fas fa-circle-check"></i> {{ book.stock }}</span>
+                                {% elseif book.stock > 0 %}
+                                    <span class="dt-stock-low"><i class="fas fa-triangle-exclamation"></i> {{ book.stock }}</span>
+                                {% else %}
+                                    <span class="dt-stock-none"><i class="fas fa-circle-xmark"></i> 0</span>
+                                {% endif %}
+                            </td>
+                            <td class="col-right">
+                                <div class="dt-actions">
+                                    <button class="dt-btn dt-btn-view" onclick="showBookDetails({{ book.id }}, '{{ book.title }}', '{{ book.author.getAllName() }}', '{{ book.yearPublication }}', '{{ book.stock }}', '{{ book.language.nom }}', '{{ book.description|replace({'"': '\"'}) }}', '{{ book.isbn }}', '{{ book.image }}')">
                                         <i class="fas fa-eye"></i> Détails
                                     </button>
-                                    <a href="{{ path('admin_book_edit', {'id': book.id}) }}" class="btn-table-edit">
-                                        <i class="fas fa-edit"></i> Éditer
+                                    <a href="{{ path('admin_book_edit', {'id': book.id}) }}" class="dt-btn dt-btn-edit">
+                                        <i class="fas fa-pen"></i> Éditer
                                     </a>
-                                    <form method="POST" action="{{ path('admin_book_delete', {'id': book.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
+                                    <form method="POST" action="{{ path('admin_book_delete', {'id': book.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce livre ?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
-                                        <button type="submit" class="btn-table-delete">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
+                                        <button type="submit" class="dt-btn dt-btn-delete"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

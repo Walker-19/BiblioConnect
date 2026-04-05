@@ -1,0 +1,573 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil — BiblioConnect{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-wrapper {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* ── Page header ── */
+        .profile-page-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 36px;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .profile-page-title h1 {
+            margin: 0 0 4px;
+            font-size: 1.6rem;
+            color: #1a1a2e;
+        }
+
+        .profile-page-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: .9rem;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            font-size: .92rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: color .15s, border-color .15s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .tab-btn:hover { color: #3b82f6; }
+
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 20px;
+            padding: 1px 7px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        /* ── Tab panels ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Info card ── */
+        .info-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.05);
+        }
+
+        .info-card h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .info-field label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+
+        .info-field span {
+            font-size: .95rem;
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .info-field.full { grid-column: 1 / -1; }
+
+        /* ── Reservations table ── */
+        .reservations-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 6px rgba(0,0,0,.05);
+        }
+
+        .reservations-table thead {
+            background: #f9fafb;
+        }
+
+        .reservations-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: .8rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .reservations-table td {
+            padding: 14px 16px;
+            font-size: .9rem;
+            color: #374151;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
+        }
+
+        .reservations-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .reservations-table tr:hover td {
+            background: #fafafa;
+        }
+
+        .book-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-thumb {
+            width: 38px;
+            height: 52px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        .book-thumb-placeholder {
+            width: 38px;
+            height: 52px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .book-cell-info strong {
+            display: block;
+            font-size: .88rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .book-cell-info small {
+            color: #9ca3af;
+            font-size: .78rem;
+        }
+
+        /* ── Status badges ── */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .76rem;
+            font-weight: 700;
+        }
+
+        .status-pending   { background: #fef3c7; color: #92400e; }
+        .status-approved  { background: #d1fae5; color: #065f46; }
+        .status-rejected  { background: #fee2e2; color: #991b1b; }
+        .status-canceled  { background: #f3f4f6; color: #6b7280; }
+        .status-completed { background: #dbeafe; color: #1e40af; }
+        .status-overdue   { background: #fce7f3; color: #9d174d; }
+
+        /* ── Empty state ── */
+        .empty-panel {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+        }
+
+        .empty-panel i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+            opacity: .3;
+        }
+
+        .empty-panel p { margin: 0 0 16px; font-size: .95rem; }
+
+        .empty-panel a {
+            display: inline-block;
+            padding: 9px 20px;
+            background: #3b82f6;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: .88rem;
+            transition: background .2s;
+        }
+
+        .empty-panel a:hover { background: #2563eb; }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .reservations-table td:nth-child(3),
+            .reservations-table th:nth-child(3) { display: none; }
+            .tabs { overflow-x: auto; }
+        }
+
+        /* ── Favorites grid ── */
+        .fav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 18px;
+        }
+
+        .fav-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform .18s, box-shadow .18s;
+        }
+
+        .fav-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,.1);
+        }
+
+        .fav-cover {
+            display: block;
+            height: 200px;
+            overflow: hidden;
+            background: #f3f4f6;
+        }
+
+        .fav-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .3s;
+        }
+
+        .fav-card:hover .fav-cover img { transform: scale(1.04); }
+
+        .fav-no-cover {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #d1d5db;
+        }
+
+        .fav-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .fav-title {
+            font-size: .88rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            text-decoration: none;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .fav-title:hover { color: #3b82f6; }
+
+        .fav-author {
+            font-size: .78rem;
+            color: #9ca3af;
+        }
+
+        .fav-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .fav-remove-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: .95rem;
+            padding: 2px 4px;
+            transition: transform .15s;
+        }
+
+        .fav-remove-btn:hover { transform: scale(1.2); }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="profile-wrapper">
+
+    {# ── Header ── #}
+    <div class="profile-page-header">
+        <div class="profile-avatar">
+            {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+        </div>
+        <div class="profile-page-title">
+            <h1>{{ app.user.prenom }} {{ app.user.nom }}</h1>
+            <p>{{ app.user.email }} · Membre depuis {{ app.user.createdAt|date('F Y') }}</p>
+        </div>
+    </div>
+
+    {# ── Tabs ── #}
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('info', this)">
+            <i class="fa fa-user"></i> Mes informations
+        </button>
+        <button class="tab-btn" onclick="switchTab('reservations', this)">
+            <i class="fa fa-calendar-check"></i> Mes réservations
+            {% set total = app.user.reservations|length %}
+            {% if total > 0 %}
+                <span class="tab-badge">{{ total }}</span>
+            {% endif %}
+        </button>
+        <button class="tab-btn" onclick="switchTab('favorites', this)">
+            <i class="fa-regular fa-heart"></i> Mes favoris
+            {% set totalFav = app.user.favorites|length %}
+            {% if totalFav > 0 %}
+                <span class="tab-badge">{{ totalFav }}</span>
+            {% endif %}
+        </button>
+    </div>
+
+    {# ── Panel : Informations ── #}
+    <div class="tab-panel active" id="panel-info">
+        <div class="info-card">
+            <h2><i class="fa fa-id-card fa-sm"></i> Informations personnelles</h2>
+            <div class="info-grid">
+                <div class="info-field">
+                    <label>Prénom</label>
+                    <span>{{ app.user.prenom }}</span>
+                </div>
+                <div class="info-field">
+                    <label>Nom</label>
+                    <span>{{ app.user.nom }}</span>
+                </div>
+                <div class="info-field full">
+                    <label>Adresse e-mail</label>
+                    <span>{{ app.user.email }}</span>
+                </div>
+                <div class="info-field">
+                    <label>Rôle</label>
+                    <span>
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <i class="fa fa-shield-halved" style="color:#3b82f6;"></i> Administrateur
+                        {% else %}
+                            <i class="fa fa-user" style="color:#6b7280;"></i> Membre
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-field">
+                    <label>Membre depuis</label>
+                    <span>{{ app.user.createdAt|date('d/m/Y') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Panel : Réservations ── #}
+    <div class="tab-panel" id="panel-reservations">
+        {% set reservations = app.user.reservations %}
+        {% if reservations is empty %}
+            <div class="empty-panel">
+                <i class="fa fa-calendar-xmark"></i>
+                <p>Vous n'avez aucune réservation pour le moment.</p>
+                <a href="{{ path('app_book_index') }}">Parcourir le catalogue</a>
+            </div>
+        {% else %}
+            <table class="reservations-table">
+                <thead>
+                    <tr>
+                        <th>Livre</th>
+                        <th>Du</th>
+                        <th>Au</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resa in reservations|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                        <tr>
+                            <td>
+                                <div class="book-cell">
+                                    {% if resa.book and resa.book.image %}
+                                        <img class="book-thumb" src="{{ asset('images/' ~ resa.book.image) }}" alt="{{ resa.book.title }}">
+                                    {% else %}
+                                        <div class="book-thumb-placeholder"><i class="fa fa-book"></i></div>
+                                    {% endif %}
+                                    <div class="book-cell-info">
+                                        {% if resa.book %}
+                                            <strong>
+                                                <a href="{{ path('app_book_show', {id: resa.book.id}) }}" style="color:inherit;text-decoration:none;">
+                                                    {{ resa.book.title }}
+                                                </a>
+                                            </strong>
+                                            <small>{% if resa.book.author %}{{ resa.book.author.getAllName }}{% endif %}</small>
+                                        {% else %}
+                                            <strong>Livre supprimé</strong>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ resa.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ resa.dateFin|date('d/m/Y') }}</td>
+                            <td>
+                                {% set s = resa.status %}
+                                <span class="status-badge status-{{ s }}">
+                                    {% if s == 'pending'   %}En attente
+                                    {% elseif s == 'approved'  %}Approuvée
+                                    {% elseif s == 'rejected'  %}Refusée
+                                    {% elseif s == 'canceled'  %}Annulée
+                                    {% elseif s == 'completed' %}Terminée
+                                    {% elseif s == 'overdue'   %}En retard
+                                    {% else %}{{ s }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    {# ── Panel : Favoris ── #}
+    <div class="tab-panel" id="panel-favorites">
+        {% set favorites = app.user.favorites %}
+        {% if favorites is empty %}
+            <div class="empty-panel">
+                <i class="fa-regular fa-heart"></i>
+                <p>Vous n'avez pas encore ajouté de favoris.</p>
+                <a href="{{ path('app_book_index') }}">Découvrir des livres</a>
+            </div>
+        {% else %}
+            <div class="fav-grid">
+                {% for fav in favorites %}
+                    {% set book = fav.book %}
+                    {% if book %}
+                    <div class="fav-card">
+                        <a href="{{ path('app_book_show', {id: book.id}) }}" class="fav-cover">
+                            {% if book.image %}
+                                <img src="{{ asset('images/' ~ book.image) }}" alt="{{ book.title }}">
+                            {% else %}
+                                <span class="fav-no-cover"><i class="fa fa-book"></i></span>
+                            {% endif %}
+                        </a>
+                        <div class="fav-body">
+                            <a href="{{ path('app_book_show', {id: book.id}) }}" class="fav-title">{{ book.title }}</a>
+                            {% if book.author %}
+                                <div class="fav-author">{{ book.author.getAllName }}</div>
+                            {% endif %}
+                            <div class="fav-actions">
+                                {% if book.stock > 0 %}
+                                    <span class="badge-avail">Disponible</span>
+                                {% else %}
+                                    <span class="badge-taken">Emprunté</span>
+                                {% endif %}
+                                <button class="fav-remove-btn"
+                                        data-book-id="{{ book.id }}"
+                                        title="Retirer des favoris">
+                                    <i class="fa-solid fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.fav-remove-btn');
+    if (!btn) return;
+    const bookId = btn.dataset.bookId;
+    fetch('/favorite/toggle/' + bookId, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    }).then(r => r.json()).then(data => {
+        if (data.status === 'removed') {
+            btn.closest('.fav-card').remove();
+        }
+    });
+});
+</script>
+{% endblock %}

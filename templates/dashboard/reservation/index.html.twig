@@ -1,0 +1,522 @@
+{% extends 'dashboard/dashboard.html.twig' %}
+
+{% block title %}Réservations{% endblock %}
+{% block page_title %}Gestion des réservations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* ── Stats cards ── */
+        .res-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .res-stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: box-shadow .15s;
+        }
+
+        .res-stat-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+
+        .res-stat-card.active-filter { border-color: #3b82f6; background: #eff6ff; }
+
+        .res-stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: 6px;
+        }
+
+        .res-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        /* ── Filters ── */
+        .res-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+
+        .filter-pill {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+            text-decoration: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            transition: all .15s;
+        }
+
+        .filter-pill:hover  { background: #e5e7eb; color: #374151; }
+        .filter-pill.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+        /* ── Table ── */
+        .res-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .res-table thead tr:first-child th:first-child { border-top-left-radius: 12px; }
+        .res-table thead tr:first-child th:last-child  { border-top-right-radius: 12px; }
+        .res-table tbody tr:last-child td:first-child   { border-bottom-left-radius: 12px; }
+        .res-table tbody tr:last-child td:last-child    { border-bottom-right-radius: 12px; }
+
+        .res-table thead { background: #f9fafb; }
+
+        .res-table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .res-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
+            color: #374151;
+        }
+
+        .res-table tr:last-child td { border-bottom: none; }
+        .res-table tr:hover td { background: #fafafa; }
+
+        /* ── Book cell ── */
+        .book-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .book-thumb {
+            width: 32px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 3px;
+            background: #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        .book-thumb-ph {
+            width: 32px;
+            height: 44px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: .8rem;
+            flex-shrink: 0;
+        }
+
+        .user-cell small { color: #9ca3af; display: block; font-size: 11px; }
+
+        /* ── Status badges ── */
+        .sbadge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .sbadge-pending   { background: #fef3c7; color: #92400e; }
+        .sbadge-approved  { background: #d1fae5; color: #065f46; }
+        .sbadge-rejected  { background: #fee2e2; color: #991b1b; }
+        .sbadge-canceled  { background: #f3f4f6; color: #6b7280; }
+        .sbadge-completed { background: #dbeafe; color: #1e40af; }
+        .sbadge-overdue   { background: #fce7f3; color: #9d174d; }
+
+        /* ── Action buttons ── */
+        .action-form { display: inline; }
+
+        .action-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .action-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            transition: background .15s, border-color .15s;
+            white-space: nowrap;
+        }
+
+        .action-trigger:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .action-trigger i.chevron {
+            font-size: .65rem;
+            color: #9ca3af;
+            transition: transform .2s;
+        }
+
+        .action-dropdown.open .action-trigger i.chevron {
+            transform: rotate(180deg);
+        }
+
+        .action-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            z-index: 100;
+            min-width: 190px;
+            overflow: hidden;
+        }
+
+        .action-dropdown.open .action-menu { display: block; }
+
+        .action-menu-header {
+            padding: 8px 14px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .action-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 14px;
+            border: none;
+            background: none;
+            font-size: .83rem;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            text-align: left;
+            transition: background .12s;
+        }
+
+        .action-menu-item:hover { background: #f9fafb; }
+
+        .action-menu-item .menu-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            flex-shrink: 0;
+        }
+
+        .icon-approve  { background: #d1fae5; color: #065f46; }
+        .icon-reject   { background: #fee2e2; color: #991b1b; }
+        .icon-cancel   { background: #f3f4f6; color: #6b7280; }
+        .icon-complete { background: #dbeafe; color: #1e40af; }
+        .icon-overdue  { background: #fce7f3; color: #9d174d; }
+        .icon-reopen   { background: #fef3c7; color: #92400e; }
+
+        .action-closed {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .78rem;
+            color: #9ca3af;
+            padding: 5px 8px;
+        }
+
+        .actions-cell { position: relative; }
+
+        /* ── User group block ── */
+        .user-group {
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: visible;
+            background: #fff;
+        }
+
+        .user-group-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: #fff;
+            font-size: .85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-group-name {
+            font-weight: 700;
+            font-size: .92rem;
+            color: #1a1a2e;
+        }
+
+        .user-group-email {
+            font-size: .78rem;
+            color: #9ca3af;
+        }
+
+        .user-group-count {
+            margin-left: auto;
+            background: #e5e7eb;
+            color: #6b7280;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+            text-align: center;
+            padding: 60px;
+            color: #9ca3af;
+        }
+
+        .res-empty i { font-size: 2.5rem; margin-bottom: 12px; display: block; opacity: .3; }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{% for msg in app.flashes('success') %}
+    <div style="background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;">
+        <i class="fas fa-check-circle"></i> {{ msg }}
+    </div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+    <div style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;">
+        <i class="fas fa-exclamation-circle"></i> {{ msg }}
+    </div>
+{% endfor %}
+
+<div style="margin-bottom:20px;">
+    <h1 style="font-size:18px;font-weight:600;color:#1a1a2e;margin:0 0 4px;">Réservations</h1>
+    <p style="font-size:13px;color:#888;margin:0;">Gérez et suivez toutes les demandes de réservation.</p>
+</div>
+
+{# ── Stats ── #}
+{% set statusLabels = {
+    'pending':   'En attente',
+    'approved':  'Approuvées',
+    'rejected':  'Refusées',
+    'canceled':  'Annulées',
+    'completed': 'Terminées',
+    'overdue':   'En retard'
+} %}
+
+<div class="res-stats">
+    {% for s, label in statusLabels %}
+        <a href="{{ path('admin_reservations', {status: s}) }}"
+           class="res-stat-card {{ statusFilter == s ? 'active-filter' : '' }}">
+            <div class="res-stat-label">{{ label }}</div>
+            <div class="res-stat-value">{{ counts[s] ?? 0 }}</div>
+        </a>
+    {% endfor %}
+</div>
+
+{# ── Filter pills ── #}
+<div class="res-filters">
+    <span style="font-size:12px;color:#6b7280;font-weight:600;">Filtrer :</span>
+    <a href="{{ path('admin_reservations') }}"
+       class="filter-pill {{ statusFilter == '' ? 'active' : '' }}">Toutes</a>
+    {% for s, label in statusLabels %}
+        <a href="{{ path('admin_reservations', {status: s}) }}"
+           class="filter-pill {{ statusFilter == s ? 'active' : '' }}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+{# ── Grouped by user ── #}
+{% if grouped is empty %}
+    <div class="res-empty">
+        <i class="fas fa-calendar-xmark"></i>
+        <p>Aucune réservation trouvée{{ statusFilter ? ' pour ce statut' : '' }}.</p>
+    </div>
+{% else %}
+    {% for userId, group in grouped %}
+        {% set user = group.user %}
+        <div class="user-group">
+
+            <div class="user-group-header">
+                <div class="user-avatar">
+                    {% if user %}{{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}{% else %}?{% endif %}
+                </div>
+                <div>
+                    <div class="user-group-name">{{ user ? user.prenom ~ ' ' ~ user.nom : 'Utilisateur supprimé' }}</div>
+                    <div class="user-group-email">{{ user ? user.email : '' }}</div>
+                </div>
+                <span class="user-group-count">
+                    {{ group.reservations|length }} réservation{{ group.reservations|length > 1 ? 's' : '' }}
+                </span>
+            </div>
+
+            <table class="res-table" style="border-radius:0 0 12px 12px;border-top:none;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Livre</th>
+                        <th>Du</th>
+                        <th>Au</th>
+                        <th>Statut</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resa in group.reservations %}
+                    <tr>
+                        <td style="color:#9ca3af;font-size:11px;">#{{ resa.id }}</td>
+
+                        <td>
+                            <div class="book-cell">
+                                {% if resa.book and resa.book.image %}
+                                    <img class="book-thumb" src="{{ asset('images/' ~ resa.book.image) }}" alt="">
+                                {% else %}
+                                    <div class="book-thumb-ph"><i class="fas fa-book"></i></div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ resa.book ? resa.book.title : '—' }}</strong><br>
+                                    <small style="color:#9ca3af;">{{ resa.book and resa.book.author ? resa.book.author.getAllName : '' }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>{{ resa.dateDebut|date('d/m/Y') }}</td>
+                        <td>{{ resa.dateFin|date('d/m/Y') }}</td>
+
+                        <td>
+                            {% set s = resa.status %}
+                            <span class="sbadge sbadge-{{ s }}">{{ statusLabels[s] ?? s }}</span>
+                        </td>
+
+                        <td style="text-align:right;" class="actions-cell">
+                            {% set s = resa.status %}
+                            {% if s in ['completed', 'overdue'] %}
+                                <span class="action-closed"><i class="fas fa-lock"></i> Clôturée</span>
+                            {% else %}
+                                <div class="action-dropdown" id="dd-{{ resa.id }}">
+                                    <button type="button" class="action-trigger" onclick="toggleDropdown('dd-{{ resa.id }}')">
+                                        <i class="fas fa-sliders"></i> Actions
+                                        <i class="fas fa-chevron-down chevron"></i>
+                                    </button>
+                                    <div class="action-menu">
+                                        <div class="action-menu-header">Changer le statut</div>
+                                        {% if s == 'pending' %}
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'approved'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-approve"><i class="fas fa-check"></i></span> Approuver
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'rejected'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-reject"><i class="fas fa-times"></i></span> Refuser
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if s == 'approved' %}
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'completed'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-complete"><i class="fas fa-flag-checkered"></i></span> Marquer terminée
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'overdue'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-overdue"><i class="fas fa-clock"></i></span> Marquer en retard
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'canceled'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-cancel"><i class="fas fa-ban"></i></span> Annuler
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if s in ['rejected', 'canceled'] %}
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'approved'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-reopen"><i class="fas fa-rotate-left"></i></span> Ré-approuver
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('admin_reservation_status', {id: resa.id, status: 'rejected'}) }}">
+                                                <button class="action-menu-item" type="submit">
+                                                    <span class="menu-icon icon-reject"><i class="fas fa-times"></i></span> Refuser
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function toggleDropdown(id) {
+    const dd = document.getElementById(id);
+    const isOpen = dd.classList.contains('open');
+    // close all
+    document.querySelectorAll('.action-dropdown.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) dd.classList.add('open');
+}
+
+// close on outside click
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('.action-dropdown')) {
+        document.querySelectorAll('.action-dropdown.open').forEach(el => el.classList.remove('open'));
+    }
+});
+</script>
+{% endblock %}

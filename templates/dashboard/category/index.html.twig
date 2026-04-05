@@ -5,65 +5,62 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/books.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/dashboard-tables.css') }}">
 {% endblock %}
 
 {% block body %}
-    <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-            <div>
-                <h1 style="font-size: 18px; font-weight: 500;">Gestion des catégories</h1>
-                <p style="font-size: 13px; color: #888780; margin-top: 4px;">Ajoutez, modifiez ou supprimez les catégories disponibles.</p>
-            </div>
-            <button class="btn btn-primary" onclick="openModal('category')"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
-        </div>
 
-        <!-- Barre de recherche -->
-        <div style="margin-bottom: 1.5rem;">
-            <div style="display: flex; gap: 8px;">
-                <div style="flex: 1; position: relative;">
-                    <input 
-                        type="text" 
-                        id="category-search" 
-                        placeholder="Rechercher une catégorie..."
-                        style="width: 100%; padding: 10px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
-                    >
-                    <i class="fas fa-search" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none;"></i>
-                </div>
-                <button onclick="clearCategorySearch()" style="padding: 10px 16px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
-                    <i class="fas fa-times"></i> Réinitialiser
-                </button>
-            </div>
+    <div class="dt-page-header">
+        <div>
+            <h1><i class="fas fa-tags" style="color:#d97706;margin-right:8px;"></i>Gestion des catégories</h1>
+            <p>Ajoutez, modifiez ou supprimez les catégories disponibles.</p>
         </div>
+        <button class="dt-btn dt-btn-primary" onclick="openModal('category')"><i class="fas fa-plus"></i> Ajouter une catégorie</button>
     </div>
 
-    <div class="book-list">
+    <div class="dt-search-wrap">
+        <div class="dt-search-field">
+            <input type="text" id="category-search" placeholder="Rechercher une catégorie…">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <button class="dt-reset-btn" onclick="clearCategorySearch()">
+            <i class="fas fa-times"></i> Réinitialiser
+        </button>
+    </div>
+
+    <div class="dt-card">
         {% if categories is empty %}
-            <p style="color: #888780; padding: 20px; text-align: center;">Aucune catégorie disponible.</p>
+            <div class="dt-empty">
+                <i class="fas fa-tags"></i>
+                <p>Aucune catégorie disponible.</p>
+            </div>
         {% else %}
-            <table class="book-table">
+            <table class="dt-table">
                 <thead>
                     <tr>
                         <th>Catégorie</th>
-                        <th style="width: 140px; text-align: center;">Actions</th>
+                        <th class="col-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="categories-table-body">
                     {% for category in categories %}
                         <tr data-category-name="{{ category.label|lower }}">
-                            <td>{{ category.label }}</td>
                             <td>
-                                <div class="actions-cell">
-                                    <button class="btn-table-edit" onclick="showCategoryDetails('{{ category.label }}')">
+                                <span class="dt-badge dt-badge-purple">
+                                    <i class="fas fa-tag" style="margin-right:4px;"></i>{{ category.label }}
+                                </span>
+                            </td>
+                            <td class="col-right">
+                                <div class="dt-actions">
+                                    <button class="dt-btn dt-btn-view" onclick="showCategoryDetails('{{ category.label }}')">
                                         <i class="fas fa-eye"></i> Détails
                                     </button>
-                                    <a href="{{ path('admin_category_edit', {'id': category.id}) }}" class="btn-table-edit">
-                                        <i class="fas fa-edit"></i> Éditer
+                                    <a href="{{ path('admin_category_edit', {'id': category.id}) }}" class="dt-btn dt-btn-edit">
+                                        <i class="fas fa-pen"></i> Éditer
                                     </a>
-                                    <form method="POST" action="{{ path('admin_category_delete', {'id': category.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
+                                    <form method="POST" action="{{ path('admin_category_delete', {'id': category.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cette catégorie ?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
-                                        <button type="submit" class="btn-table-delete">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
+                                        <button type="submit" class="dt-btn dt-btn-delete"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>

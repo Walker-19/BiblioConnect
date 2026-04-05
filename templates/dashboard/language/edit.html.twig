@@ -1,4 +1,4 @@
-{% extends "base.html.twig" %}
+{% extends "dashboard/dashboard.html.twig" %}
 
 {% block title %}Éditer une Langue{% endblock %}
 
@@ -10,9 +10,9 @@
             
             {{ form_start(form, {'attr': {'class': 'form-horizontal'}}) }}
                 <div class="form-group mb-3">
-                    {{ form_label(form.name, 'Nom de la langue') }}
-                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-                    {{ form_errors(form.name) }}
+                    {{ form_label(form.nom, 'Nom de la langue') }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.nom) }}
                 </div>
 
                 <div class="form-group">

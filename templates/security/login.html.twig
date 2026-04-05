@@ -1,40 +1,202 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Connexion — BiblioConnect{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .login-wrapper {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .login-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card .brand {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-card .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 4px;
+        }
+
+        .login-card .brand p {
+            color: #6b7280;
+            font-size: .9rem;
+            margin: 0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: .88rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .85rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: .95rem;
+            color: #111827;
+            background: #f9fafb;
+            box-sizing: border-box;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+            background: #fff;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #3b82f6;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .2s;
+            margin-top: 6px;
+        }
+
+        .btn-login:hover { background: #2563eb; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 22px 0;
+            color: #9ca3af;
+            font-size: .82rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .register-link {
+            text-align: center;
+            font-size: .9rem;
+            color: #6b7280;
+        }
+
+        .register-link a {
+            color: #3b82f6;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-link a:hover { text-decoration: underline; }
+
+        .already-logged {
+            text-align: center;
+            font-size: .9rem;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #166534;
+            margin-bottom: 20px;
+        }
+
+        .already-logged a { color: #15803d; font-weight: 600; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <form method="post" style="max-width: 750px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 5px; background-color: #f9f9f9; margin-top: 50px;">
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <div class="brand">
+            <h1>Biblio<span style="color:#3b82f6;">Connect</span></h1>
+            <p>Connectez-vous pour accéder à votre espace</p>
+        </div>
+
         {% if error %}
-            <div class="alert alert-danger" style="color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;">
+            <div class="alert-error">
+                <i class="fa fa-circle-exclamation"></i>
                 {{ error.messageKey|trans(error.messageData, 'security') }}
             </div>
         {% endif %}
 
         {% if app.user %}
-            <div class="mb-3">
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+            <div class="already-logged">
+                Vous êtes connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.
+                <a href="{{ logout_path() }}">Se déconnecter</a>
             </div>
         {% endif %}
 
-        <h1 class="h3 mb-3 font-weight-normal">Se connecter</h1>
-        <label for="username">Email</label>
-        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
-        <label for="password">Password</label>
-        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
-        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-
-        {#
-            Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-            See https://symfony.com/doc/current/security/remember_me.html
-
-            <div class="checkbox mb-3">
-                <input type="checkbox" name="_remember_me" id="_remember_me">
-                <label for="_remember_me">Remember me</label>
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Adresse e-mail</label>
+                <input type="email" value="{{ last_username }}" name="_username" id="username"
+                       autocomplete="email" required autofocus placeholder="exemple@mail.com">
             </div>
-        #}
 
-        <button class="btn btn-lg btn-primary" type="submit">
-            Se connecter
-        </button>
-    </form>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" name="_password" id="password"
+                       autocomplete="current-password" required placeholder="••••••••">
+            </div>
+
+            <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn-login" type="submit">
+                Se connecter
+            </button>
+        </form>
+
+        <div class="divider">ou</div>
+
+        <div class="register-link">
+            Pas encore de compte ?
+            <a href="{{ path('app_registration') }}">Créer un compte</a>
+        </div>
+
+    </div>
+</div>
 {% endblock %}
